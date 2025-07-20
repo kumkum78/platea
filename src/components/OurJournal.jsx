@@ -166,7 +166,7 @@ export default function OurJournal() {
             {/* Article Content */}
             <div className="p-6 pb-4">
               <h3 className="text-xl tracking-tighter font-bold mb-4 leading-snug text-black">{article.title}</h3>
-              <div className="flex items-center text-black text-sm flex-wrap gap-x-4 gap-y-1">
+              <div className="flex items-center justify-between text-black text-sm  gap-y-1">
                 <span>by <span className="font-bold text-black">{article.author}</span></span>
                 {/* <span className="mx-1">•</span> */}
                 <div className='flex items-center text-sm text-semibold gap-x-1 text-gray-500 tracking-tighter'>

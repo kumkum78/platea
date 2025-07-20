@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Heart, Bookmark, Clock, User, PlayCircle, Play } from 'lucide-react';
 
 const videos = [
@@ -109,6 +109,24 @@ const videos = [
 ];
 
 export default function Vedios() {
+  const [videosState, setVideosState] = useState(videos);
+
+  const toggleLike = (id) => {
+    setVideosState(prev =>
+      prev.map(video =>
+        video.id === id ? { ...video, liked: !video.liked } : video
+      )
+    );
+  };
+
+  const toggleBookmark = (id) => {
+    setVideosState(prev =>
+      prev.map(video =>
+        video.id === id ? { ...video, bookmarked: !video.bookmarked } : video
+      )
+    );
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       {/* Explore All Recipes Button */}
@@ -125,7 +143,7 @@ export default function Vedios() {
       </div>
       {/* Video Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        {videos.map((video) => (
+        {videosState.map((video) => (
           <div key={video.id} className="bg-white rounded-xl overflow-hidden shadow hover:shadow-lg transition-shadow duration-200">
             {/* Image Container */}
             <div className="relative group">
@@ -135,12 +153,11 @@ export default function Vedios() {
                 className="w-full h-96 object-cover"
               />
               {/* Play Button Overlay */}
-              
-<div className="absolute inset-0 flex items-center justify-center">
-  <span className="bg-white/30 rounded-full p-8 shadow-lg backdrop-blur-sm group-hover:scale-110 transition-transform">
-    <Play className="w-10 h-10 text-white" fill="currentColor" />
-  </span>
-</div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="bg-white/30 rounded-full p-8 shadow-lg backdrop-blur-sm group-hover:scale-110 transition-transform">
+                  <Play className="w-10 h-10 text-white" fill="currentColor" />
+                </span>
+              </div>
               {/* Top Overlay Icons */}
               <div className="absolute top-3 left-3 flex items-center space-x-2">
                 <div className="bg-white bg-opacity-90 rounded-full px-2 py-1 flex items-center space-x-1">
@@ -148,17 +165,26 @@ export default function Vedios() {
                   <span className="text-xs font-medium text-gray-800">{video.rating}</span>
                 </div>
               </div>
-
               <div className="absolute top-3 right-3 flex flex-col space-y-2">
                 <button
-                  className={`p-2 rounded-full transition-colors duration-200 focus:outline-none bg-white bg-opacity-90 text-gray-600 hover:bg-red-50`}
+                  onClick={() => toggleLike(video.id)}
+                  className={`p-2 rounded-full transition-colors duration-200 focus:outline-none ${
+                    video.liked
+                      ? 'bg-red-500 text-white'
+                      : 'bg-white bg-opacity-90 text-gray-600 hover:bg-red-50'
+                  }`}
                 >
-                  <Heart size={16} />
+                  <Heart size={16} fill={video.liked ? 'currentColor' : 'none'} />
                 </button>
                 <button
-                  className={`p-2 rounded-full transition-colors duration-200 focus:outline-none bg-white bg-opacity-90 text-gray-600 hover:bg-gray-50`}
+                  onClick={() => toggleBookmark(video.id)}
+                  className={`p-2 rounded-full transition-colors duration-200 focus:outline-none ${
+                    video.bookmarked
+                      ? 'bg-gray-800 text-white'
+                      : 'bg-white bg-opacity-90 text-gray-600 hover:bg-gray-50'
+                  }`}
                 >
-                  <Bookmark size={16} />
+                  <Bookmark size={16} fill={video.bookmarked ? 'currentColor' : 'none'} />
                 </button>
               </div>
             </div>
