@@ -16,7 +16,7 @@ const recipes = [
     id: 1,
     category: 'Pasta',
     title: 'Creamy Garlic Mushroom Penne Pasta',
-    image: '../../images/recipe-2-630x785.jpg',
+    image: '/images/recipe-2-630x785.jpg',
     rating: 4.8,
     time: '5 min',
     difficulty: 'Beginner',
@@ -29,7 +29,7 @@ const recipes = [
     id: 2,
     category: 'Salads',
     title: 'Zesty Lemon Quinoa with Fresh Herbs',
-    image: '../../images/recipe-3-630x785.jpg',
+    image: '/images/recipe-3-630x785.jpg',
     rating: 4.5,
     time: '60 min',
     difficulty: 'Beginner',
@@ -42,7 +42,7 @@ const recipes = [
     id: 3,
     category: 'Meat',
     title: 'Smoky Barbecue Pulled Beef Sandwiches',
-    image: '../../images/recipe-4-550x690.jpg',
+    image: '/images/recipe-4-550x690.jpg',
     rating: 4.8,
     time: '15 min',
     difficulty: 'Easy',
@@ -55,7 +55,7 @@ const recipes = [
     id: 4,
     category: 'Breakfasts',
     title: 'Fluffy Banana Pancakes with Maple Syrup',
-    image: '../../images/recipe-5-630x785.jpg',
+    image: '/images/recipe-5-630x785.jpg',
     rating: 4.8,
     time: '60 min',
     difficulty: 'Advanced',
@@ -68,7 +68,7 @@ const recipes = [
     id: 5,
     category: 'Desserts',
     title: 'Molten Chocolate Lava Cake Dessert',
-    image: '../../images/recipe-6-630x785.jpg',
+    image: '/images/recipe-6-630x785.jpg',
     rating: 4.9,
     time: '80 min',
     difficulty: 'Advanced',
@@ -81,7 +81,7 @@ const recipes = [
     id: 6,
     category: 'Side Dishes',
     title: 'Crispy Parmesan Garlic Zucchini Sticks',
-    image: '../../images/recipe-7-630x785.jpg',
+    image: '/images/recipe-7-630x785.jpg',
     rating: 4.4,
     time: '100 min',
     difficulty: 'Advanced',
@@ -94,7 +94,7 @@ const recipes = [
     id: 7,
     category: 'Drinks',
     title: 'Mango Pineapple Smoothie with Coconut',
-    image: '../../images/recipe-8-630x785.jpg',
+    image: '/images/recipe-8-630x785.jpg',
     rating: 4.9,
     time: '30 min',
     difficulty: 'Easy',
@@ -107,7 +107,7 @@ const recipes = [
     id: 8,
     category: 'Gluten-Free',
     title: 'Gluten-Free Almond Waffles with Berries',
-    image: '../../images/recipe-9-630x785.jpg',
+    image: '/images/recipe-9-630x785.jpg',
     rating: 4.8,
     time: '20 min',
     difficulty: 'Advanced',
@@ -205,7 +205,7 @@ const NewRecipe = () => {
                 className="w-full h-94 object-cover"
               />
               {/* Top Overlay Icons */}
-              <div className="absolute top-3 left-3 flex items-center space-x-2">
+              <div className="absolute top-3 left-3">
                 <div className="bg-white bg-opacity-90 rounded-full px-2 py-1 flex items-center space-x-1">
                   <span className="text-yellow-400 text-sm">★</span>
                   <span className="text-xs font-medium text-gray-800">{recipe.rating}</span>

@@ -106,7 +106,7 @@ export default function OurJournal() {
       date: '7 months Ago',
       readTime: '5 Min Read',
       comments: '4',
-      image: '../../images/post-1-800x520.jpg'
+      image: '/images/post-1-800x520.jpg'
     },
     {
       id: 2,
@@ -118,7 +118,7 @@ export default function OurJournal() {
       date: '7 months Ago',
       readTime: '5 Min Read',
       comments: '4',
-      image: '../../images/post-2-800x520.jpg'
+      image: '/images/post-2-800x520.jpg'
     },
     {
       id: 3,
@@ -130,7 +130,7 @@ export default function OurJournal() {
       date: '7 months Ago',
       readTime: '5 Min Read',
       comments: '4',
-      image: '../../images/post-5-800x520.jpg'
+      image: '/images/post-5-800x520.jpg'
     }
   ];
 

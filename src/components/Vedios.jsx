@@ -141,7 +141,7 @@ export default function Vedios() {
     <Play className="w-10 h-10 text-white" fill="currentColor" />
   </span>
 </div>
-              Top Overlay Icons
+              {/* Top Overlay Icons */}
               <div className="absolute top-3 left-3 flex items-center space-x-2">
                 <div className="bg-white bg-opacity-90 rounded-full px-2 py-1 flex items-center space-x-1">
                   <span className="text-yellow-400 text-sm">★</span>

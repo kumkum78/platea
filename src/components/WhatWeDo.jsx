@@ -11,7 +11,7 @@ const WhatWeDo = () => {
       id: 1,
       category: 'Pasta',
       title: 'Creamy Garlic Mushroom Penne Pasta',
-      image: '../../images/recipe-2-550x690.jpg',
+      image: '../../public/images/recipe-2-550x690.jpg',
       rating: 4.8,
       time: '5 min',
       difficulty: 'Beginner',

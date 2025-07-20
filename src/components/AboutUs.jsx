@@ -21,7 +21,7 @@ const AboutUs=() => {
         {/* Left Card */}
         <div className="pl-2 rounded-xl overflow-hidden shadow bg-black relative flex flex-col justify-between min-h-[700px]">
           {/* Background image */}
-          <div className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-70" style={{backgroundImage: "url('../../images/section-bg-02.jpg')"}} />
+          <div className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-70" style={{backgroundImage: "url('/images/section-bg-02.jpg')"}} />
           <div className="relative z-10 flex flex-col h-full justify-between p-8">
             {/* Rating */}
             <div className="flex items-center space-x-2 mb-14">
@@ -42,7 +42,7 @@ const AboutUs=() => {
         {/* Right Card */}
         <div className="rounded-xl overflow-hidden shadow bg-black relative flex flex-col justify-between min-h-[700px]">
           {/* Chef image as background */}
-          <div className="absolute right-0 bottom-0 h-full w-full bg-cover bg-center rounded-r-xl hidden md:block" style={{backgroundImage: "url('../../images/section-bg-03.jpg')", objectPosition: 'right'}} />
+          <div className="absolute right-0 bottom-0 h-full w-full bg-cover bg-center rounded-r-xl  md:block" style={{backgroundImage: "url('/images/section-bg-03.jpg')", objectPosition: 'right'}} />
           <div className="relative z-10 flex flex-col h-full justify-between p-8">
             {/* Rating */}
             <div className="flex items-center space-x-2 mb-14">
