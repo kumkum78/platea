@@ -60,11 +60,11 @@ const Navbar = () => {
       </div>
 
       {/* Main navbar */}
-      <div className="border-b border-gray-100">
+      <div>
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex items-center">
+            {/* <div className="flex items-center"> */}
               <div className="flex items-center">
                 <div className="w-7 h-7 bg-red-500 rounded-full flex items-center justify-center mr-2">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,7 +73,7 @@ const Navbar = () => {
                 </div>
                 <span className="text-xl font-bold text-red-500">Platea</span>
               </div>
-            </div>
+            {/* </div> */}
 
             {/* Desktop Navigation */}
             <div className="hidden lg:block">
