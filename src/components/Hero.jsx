@@ -111,7 +111,7 @@ const Hero = () => {
                 placeholder="Find what do you want to cook today"
                 className="flex-grow px-2 sm:px-3 lg:px-4 py-3 sm:py-3.5 lg:py-4 outline-none text-gray-700 placeholder:text-gray-600 text-sm sm:text-base lg:text-md"
               />
-              <button className="bg-red-500 text-white p-3 sm:p-3.5 lg:p-4 rounded-lg sm:rounded-xl lg:rounded-xl hover:bg-red-600 transition-colors mr-1">
+              <button className="bg-red-500 text-white hover:cursor-pointer p-3 sm:p-3.5 lg:p-4 rounded-lg sm:rounded-xl lg:rounded-xl hover:bg-black transition-colors mr-1">
                 <svg
                   className="w-5 h-5 sm:w-5.5 sm:h-5.5 lg:w-6 lg:h-6"
                   fill="none"

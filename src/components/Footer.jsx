@@ -128,14 +128,14 @@ const socialIcons = [
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-50 pt-12 pb-0 lg:pt-22">
+    <footer className="bg-gray-100 pt-8 pb-0 lg:pt-22">
       {/* Popular Tags Section */}
       <div className="max-w-5xl mx-auto text-center mb-12 px-4 sm:px-6 lg:px-0 lg:mb-20">
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 lg:mb-4 text-black">Explore Popular Tags</h2>
-        <p className="text-gray-500 text-semibold text-sm lg:text-md mb-6 lg:mb-8 tracking-tight">From quick meals to healthy dishes, our popular tags make it easy to explore delicious options with one click.</p>
-        <div className="flex flex-wrap justify-center gap-x-2 sm:gap-x-3 lg:gap-x-4 gap-y-2 mb-4">
+        <h2 className="text-3xl sm:text-3xl lg:text-5xl font-semibold mb-3 lg:mb-4 text-black">Explore Popular Tags</h2>
+        <p className="text-gray-500 text-semibold text-md mb-6 lg:mb-10 tracking-tight">From quick meals to healthy dishes, our popular tags make it easy to explore delicious options with one click.</p>
+        <div className="flex flex-wrap justify-center gap-x-2 sm:gap-x-3 lg:gap-x-4 gap-y-2 mb-4 cursor-pointer ">
           {tags.map(tag => (
-            <span key={tag} className="bg-white text-xs sm:text-sm lg:text-sm tracking-tighter text-black font-bold rounded-full px-3 sm:px-4 lg:px-4 py-2 lg:py-[10px] mb-2 inline-block whitespace-nowrap">
+            <span key={tag} className="bg-white text-xs sm:text-sm lg:text-sm tracking-tighter text-black font-bold rounded-full px-3 sm:px-4 lg:px-4 py-2 lg:py-[10px] mb-2 inline-block whitespace-nowrap hover:bg-red-500 hover:text-white">
               {tag}
             </span>
           ))}
@@ -158,7 +158,7 @@ export default function Footer() {
             {/* Navigation Links */}
             <div className="flex flex-wrap justify-center lg:justify-center gap-x-4 sm:gap-x-6 lg:gap-x-10 gap-y-2 lg:mb-4 font-bold text-black text-xs sm:text-sm lg:text-sm order-1 lg:order-2">
               {navLinks.map(link => (
-                <a key={link} href="#" className="hover:underline whitespace-nowrap">
+                <a key={link} href="#" className="hover:text-red-500 whitespace-nowrap">
                   {link}
                 </a>
               ))}
@@ -174,11 +174,16 @@ export default function Footer() {
               © 2025 Platea. All rights reserved. Designed by <a href="#" className="hover:text-red-500">Gloria Themes</a>.
             </p>
             <div className="flex justify-center items-center mt-2">
-              <svg className="w-6 h-6 lg:w-8 lg:h-8 text-red-500 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M8 12h8M12 8v8" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-              <span className="text-base lg:text-lg font-bold text-red-500">Platea</span>
+              <div className="w-6 h-6 sm:w-6 sm:h-6 md:w-6 md:h-6 bg-red-500 rounded-md flex items-center justify-center mr-2">
+                  <svg
+                  className="w-4 h-4 sm:w-4 sm:h-4 md:w-4 md:h-4 lg:w-4 lg:h-4 text-white hover:cursor-pointer"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M8.1 13.34l2.83-2.83L3.91 3.5c-1.56 1.56-1.56 4.09 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.2-1.1-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z" />
+                </svg>
+                </div>
+              <span className="text-base lg:text-lg font-bold text-red-500 hover:cursor-pointer">Platea</span>
             </div>
           </div>
         </div>

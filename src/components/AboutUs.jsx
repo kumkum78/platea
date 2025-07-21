@@ -15,9 +15,9 @@ const categories = [
 
 const AboutUs=() => {
   return (
-    <div className="max-w-[88%] mx-auto px-4 py-12">
+    <div className="max-w-[88%] mx-auto px-4 py-4">
       {/* Top Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-14">
         {/* Left Card */}
         <div className="pl-2 rounded-xl overflow-hidden shadow bg-black relative flex flex-col justify-between min-h-[700px]">
           {/* Background image */}
@@ -35,7 +35,7 @@ const AboutUs=() => {
             <div className="flex-1 flex flex-col">
               <h2 className="text-2xl md:text-4xl font-bold text-white mb-14 pr-18">Learn from the best and create culinary magic at home.</h2>
               <p className="text-white text-md pr-16 mb-22 max-w-md">Get inspired by expert tips and techniques to perfect your skills. Explore recipes that help you master new dishes, adding confidence and creativity to your home cooking experience.</p>
-              <button className="bg-red-500 text-white px-3 py-2 rounded-lg font-semibold shadow hover:bg-red-600 transition w-fit">View Recipes</button>
+              <button className="bg-red-500 text-white px-3 py-2 rounded-lg font-semibold shadow hover:bg-black hover:cursor-pointer transition w-fit">View Recipes</button>
             </div>
           </div>
         </div>
@@ -56,7 +56,7 @@ const AboutUs=() => {
             <div className="flex-1 flex flex-col ">
               <h2 className="text-2xl tracking-tight md:text-4xl font-bold text-black mb-12 pr-40">Add flavor, flair, and a touch of creativity to your meals.</h2>
               <p className="text-black  text-semibold text-md  mb-8 max-w-md pr-12 mb-22">Elevate your dishes with bold flavors and creative twists. From vibrant ingredients to expert techniques, discover recipes that transform your everyday cooking into something extraordinary.</p>
-              <button className="bg-red-500 text-white px-3 py-2 rounded-lg font-semibold shadow hover:bg-red-600 transition w-fit">View Recipes</button>
+              <button className="bg-red-500 text-white px-3 py-2 rounded-lg font-semibold shadow hover:bg-black hover:cursor-pointer transition w-fit">View Recipes</button>
             </div>
           </div>
         </div>
@@ -64,7 +64,7 @@ const AboutUs=() => {
       {/* Category Row */}
       <div className="flex flex-wrap justify-center gap-[21px]">
         {categories.map((cat) => (
-          <div key={cat.label} className="flex flex-col items-center bg-white border border-gray-200 rounded-xl px-8 py-6 min-w-[120px] ">
+          <div key={cat.label} className="flex flex-col items-center bg-white border border-gray-100 rounded-xl px-8 py-6 min-w-[120px] hover:cursor-pointer hover:bg-gray-100">
             <div className="mb-2 text-gray-900">{cat.icon}</div>
             <div className="font-semibold text-base text-gray-900 mb-1">{cat.label}</div>
             <div className="text-gray-400 text-sm">{cat.count} Recipes</div>
