@@ -108,22 +108,22 @@ const WhatWeDo = () => {
     <div className="max-w-8xl mx-auto px-4 py-14">
       {/* Tab Navigation */}
       <div className="flex justify-center mb-8">
-        <div className="flex space-x-8">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`pb-5 text-2xl font-semibold ${
-                activeTab === tab
-                  ? "text-gray-900 border-b-1 border-gray-900"
-                  : "text-gray-400 hover:text-gray-900 hover:border-b-1 hover:border-gray-900 hover:cursor-pointer"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-      </div>
+  <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-8 w-full sm:w-auto">
+    {tabs.map((tab) => (
+      <button
+        key={tab}
+        onClick={() => setActiveTab(tab)}
+        className={`pb-5 text-lg sm:text-2xl font-semibold text-center sm:text-left ${
+          activeTab === tab
+            ? "text-gray-900 lg:border-b-1 lg:border-gray-900"
+            : "text-gray-400 hover:text-gray-900 lg:hover:border-b-1 lg:hover:border-gray-900 hover:cursor-pointer"
+        }`}
+      >
+        {tab}
+      </button>
+    ))}
+  </div>
+</div>
 
       {/* Recipe Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">

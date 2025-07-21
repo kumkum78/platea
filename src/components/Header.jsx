@@ -34,31 +34,31 @@ const Navbar = () => {
     <nav className="bg-white">
       {/* Top bar */}
       <div className="bg-white border-b border-gray-200 py-2">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4">
+          <div className="flex items-center justify-between min-h-[32px]">
             <div className="hidden md:flex items-center justify-center space-x-6 text-xs text-gray-600">
               <div className="flex items-center space-x-4 border-r border-gray-300 pr-6">
-              <div className="flex items-center justify-center space-x-3 relative">
-                 <button onClick={toggleCategories} className="flex items-center space-x-3">
-                   <Menu className='text-gray-500 hover:text-red-500 cursor-pointer' size={22} />
-                   <span className="font-semibold text-gray-500 text-sm hover:text-red-500 cursor-pointer">Recipe Categories</span>
-                 </button>
-                 
-                 {isCategoriesOpen && (
-                   <div className="absolute top-8 left-0 z-50 w-56 bg-white rounded-md shadow-lg border py-2">
-                     <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">Video Recipes</a>
-                     <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">A-Z Recipes</a>
-                     <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">This Week's Recipes</a>
-                     <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">Popular Recipes</a>
-                     <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">Breakfast Recipes</a>
-                     <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">Lunch Recipes</a>
-                     <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">Dinner Recipes</a>
-                     <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">Dessert Recipes</a>
-                   </div>
-                 )}
-              </div>
-              
-              <span className="font-small text-xs font-semibold border border-gray-300 rounded-full px-2 py-1">1.6K</span>
+                <div className="flex items-center justify-center space-x-3 relative">
+                  <button onClick={toggleCategories} className="flex items-center space-x-3">
+                    <Menu className='text-gray-500 hover:text-red-500 cursor-pointer' size={22} />
+                    <span className="font-semibold text-gray-500 text-sm hover:text-red-500 cursor-pointer">Recipe Categories</span>
+                  </button>
+                  
+                  {isCategoriesOpen && (
+                    <div className="absolute top-8 left-0 z-50 w-56 bg-white rounded-md shadow-lg border py-2">
+                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">Video Recipes</a>
+                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">A-Z Recipes</a>
+                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">This Week's Recipes</a>
+                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">Popular Recipes</a>
+                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">Breakfast Recipes</a>
+                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">Lunch Recipes</a>
+                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">Dinner Recipes</a>
+                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">Dessert Recipes</a>
+                    </div>
+                  )}
+                </div>
+                
+                <span className="font-small text-xs font-semibold border border-gray-300 rounded-full px-2 py-1">1.6K</span>
               </div>
               <span className='text-gray-400 text-sm tracking-tighter hidden lg:inline hover:text-red-500 hover:cursor-pointer'>Video Recipes</span>
               <span className='text-gray-400 text-sm tracking-tighter hidden lg:inline hover:text-red-500 hover:cursor-pointer'>A-Z Recipes</span>
@@ -68,15 +68,15 @@ const Navbar = () => {
             
             {/* Mobile top bar - simplified */}
             <div className="md:hidden flex items-center justify-between w-full">
-              <div className="flex items-center space-x-3 relative">
-                <button onClick={toggleCategories} className="flex items-center space-x-3">
-                  <Menu className='text-gray-500 hover:text-red-500 cursor-pointer' size={18} />
-                  <span className="font-semibold text-gray-500 text-sm hover:text-red-500 cursor-pointer">Categories</span>
+              <div className="flex items-center space-x-2 relative">
+                <button onClick={toggleCategories} className="flex items-center space-x-2">
+                  <Menu className='text-gray-500 hover:text-red-500 cursor-pointer' size={16} />
+                  <span className="font-semibold text-gray-500 text-xs hover:text-red-500 cursor-pointer">Categories</span>
                 </button>
                 <span className="font-small text-xs font-semibold border border-gray-300 rounded-full px-1.5 py-0.5">1.6K</span>
                 
                 {isCategoriesOpen && (
-                  <div className="absolute top-8 left-0 z-50 w-56 bg-white rounded-md shadow-lg border py-2">
+                  <div className="absolute top-7 left-0 z-50 w-48 bg-white rounded-md shadow-lg border py-2">
                     <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">Video Recipes</a>
                     <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">A-Z Recipes</a>
                     <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500">This Week's Recipes</a>
@@ -88,7 +88,7 @@ const Navbar = () => {
                   </div>
                 )}
               </div>
-              <span className='text-gray-400 font-semibold text-xs tracking-tighter'>Contact</span>
+              {/* <span className='text-gray-400 font-semibold text-xs tracking-tighter'>Contact</span> */}
             </div>
             
             <div className="hidden md:flex items-center space-x-7">
@@ -118,123 +118,123 @@ const Navbar = () => {
 
       {/* Main navbar */}
       <div className={`transition-all duration-300 ${isSticky ? 'fixed top-0 left-0 right-0 z-50 bg-white shadow-md' : 'bg-white'}`}>
-        <div className="max-w-7xl mx-auto px-3 py-3">
-          <div className="flex items-center justify-between h-16">
+        <div className="max-w-7xl mx-auto px-2 sm:px-3 lg:px-4 py-2 sm:py-3">
+          <div className="flex items-center justify-between min-h-[48px] sm:min-h-[56px] lg:h-16">
             {/* Logo */}
-            <div className="flex item-center gap-14">
+            <div className="flex items-center gap-6 sm:gap-8 lg:gap-14">
               <div className="flex items-center">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 bg-red-500 rounded-md flex items-center justify-center mr-2">
+                <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-9 lg:h-9 bg-red-500 rounded-md flex items-center justify-center mr-2">
                   <svg
-                  className="w-4 h-4 sm:w-5 sm:h-5 md:w-5 md:h-5 lg:w-5 lg:h-5 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M8.1 13.34l2.83-2.83L3.91 3.5c-1.56 1.56-1.56 4.09 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.2-1.1-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z" />
-                </svg>
+                    className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-white"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M8.1 13.34l2.83-2.83L3.91 3.5c-1.56 1.56-1.56 4.09 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.2-1.1-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z" />
+                  </svg>
                 </div>
-                <span className="text-2xl sm:text-2xl md:text-3xl font-bold text-red-500">Platea</span>
+                <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-red-500">Platea</span>
               </div>
 
-            {/* Desktop Navigation */}
-            <div className="hidden lg:block pt-2">
-              <div className="flex items-center space-x-8">
-                <div className="relative">
-                  <button
-                    onClick={() => toggleDropdown('home')}
-                    className="text-gray-800 hover:text-red-500 hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
-                  >
-                    Home
-                    <ChevronDown size={14} className="ml-1 mt-1" />
-                  </button>
-                  {activeDropdown === 'home' && (
-                    <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
-                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Home Option 1</a>
-                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Home Option 2</a>
-                    </div>
-                  )}
-                </div>
+              {/* Desktop Navigation */}
+              <div className="hidden lg:block pt-2">
+                <div className="flex items-center space-x-8">
+                  <div className="relative">
+                    <button
+                      onClick={() => toggleDropdown('home')}
+                      className="text-gray-800 hover:text-red-500 hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
+                    >
+                      Home
+                      <ChevronDown size={14} className="ml-1 mt-1" />
+                    </button>
+                    {activeDropdown === 'home' && (
+                      <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
+                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Home Option 1</a>
+                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Home Option 2</a>
+                      </div>
+                    )}
+                  </div>
 
-                <div className="relative">
-                  <button
-                    onClick={() => toggleDropdown('recipes')}
-                    className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
-                  >
-                    Recipes
-                    <ChevronDown size={14} className="ml-1 mt-1" />
-                  </button>
-                  {activeDropdown === 'recipes' && (
-                    <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
-                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">All Recipes</a>
-                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Popular Recipes</a>
-                    </div>
-                  )}
-                </div>
+                  <div className="relative">
+                    <button
+                      onClick={() => toggleDropdown('recipes')}
+                      className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
+                    >
+                      Recipes
+                      <ChevronDown size={14} className="ml-1 mt-1" />
+                    </button>
+                    {activeDropdown === 'recipes' && (
+                      <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
+                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">All Recipes</a>
+                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Popular Recipes</a>
+                      </div>
+                    )}
+                  </div>
 
-                <div className="relative">
-                  <button
-                    onClick={() => toggleDropdown('cuisines')}
-                    className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
-                  >
-                    Cuisines
-                    <ChevronDown size={14} className="ml-1 mt-1" />
-                  </button>
-                  {activeDropdown === 'cuisines' && (
-                    <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
-                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Italian</a>
-                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Chinese</a>
-                    </div>
-                  )}
-                </div>
+                  <div className="relative">
+                    <button
+                      onClick={() => toggleDropdown('cuisines')}
+                      className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
+                    >
+                      Cuisines
+                      <ChevronDown size={14} className="ml-1 mt-1" />
+                    </button>
+                    {activeDropdown === 'cuisines' && (
+                      <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
+                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Italian</a>
+                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Chinese</a>
+                      </div>
+                    )}
+                  </div>
 
-                <div className="relative">
-                  <button
-                    onClick={() => toggleDropdown('categories')}
-                    className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
-                  >
-                    Categories
-                    <ChevronDown size={14} className="ml-1 mt-1" />
-                  </button>
-                  {activeDropdown === 'categories' && (
-                    <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
-                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Breakfast</a>
-                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Lunch</a>
-                    </div>
-                  )}
-                </div>
+                  <div className="relative">
+                    <button
+                      onClick={() => toggleDropdown('categories')}
+                      className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
+                    >
+                      Categories
+                      <ChevronDown size={14} className="ml-1 mt-1" />
+                    </button>
+                    {activeDropdown === 'categories' && (
+                      <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
+                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Breakfast</a>
+                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Lunch</a>
+                      </div>
+                    )}
+                  </div>
 
-                <div className="relative">
-                  <button
-                    onClick={() => toggleDropdown('blog')}
-                    className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
-                  >
-                    Blog
-                    <ChevronDown size={14} className="ml-1 mt-1" />
-                  </button>
-                  {activeDropdown === 'blog' && (
-                    <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
-                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Latest Posts</a>
-                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Cooking Tips</a>
-                    </div>
-                  )}
-                </div>
+                  <div className="relative">
+                    <button
+                      onClick={() => toggleDropdown('blog')}
+                      className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
+                    >
+                      Blog
+                      <ChevronDown size={14} className="ml-1 mt-1" />
+                    </button>
+                    {activeDropdown === 'blog' && (
+                      <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
+                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Latest Posts</a>
+                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Cooking Tips</a>
+                      </div>
+                    )}
+                  </div>
 
-                <div className="relative">
-                  <button
-                    onClick={() => toggleDropdown('features')}
-                    className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
-                  >
-                    Features
-                    <ChevronDown size={14} className="ml-1  mt-1" />
-                  </button>
-                  {activeDropdown === 'features' && (
-                    <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
-                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Meal Planner</a>
-                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Recipe Calculator</a>
-                    </div>
-                  )}
+                  <div className="relative">
+                    <button
+                      onClick={() => toggleDropdown('features')}
+                      className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
+                    >
+                      Features
+                      <ChevronDown size={14} className="ml-1  mt-1" />
+                    </button>
+                    {activeDropdown === 'features' && (
+                      <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
+                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Meal Planner</a>
+                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Recipe Calculator</a>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
             </div>
 
             {/* Right side actions */}
@@ -254,41 +254,37 @@ const Navbar = () => {
             </div>
 
             {/* Medium screen actions (tablet) */}
-            <div className="hidden md:flex lg:hidden items-center space-x-3">
+            <div className="hidden md:flex lg:hidden items-center space-x-2 sm:space-x-3">
               <button className="text-black hover:text-red-500 p-1">
                 <Search size={18} />
               </button>
               <button className="text-black hover:text-red-500 p-1">
                 <User size={18} />
               </button>
-              <button className="bg-gray-200 hover:bg-gray-300 text-black px-3 py-2 font-semibold tracking-tighter rounded-md text-sm font-medium">
+              <button className="bg-gray-200 hover:bg-red-500 hover:text-white text-black px-2 sm:px-3 py-1.5 sm:py-2 font-semibold tracking-tighter rounded-md text-xs sm:text-sm font-medium">
                 Add Recipe
+              </button>
+              <button
+                onClick={toggleMenu}
+                className="text-gray-600 hover:text-red-500 p-1.5 sm:p-2"
+              >
+                {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
             </div>
 
             {/* Mobile actions */}
-            <div className="flex md:hidden items-center space-x-2">
+            <div className="flex md:hidden items-center space-x-1">
               <button className="text-black hover:text-red-500 p-1">
-                <Search size={18} />
+                <Search size={16} />
               </button>
               <button className="text-black hover:text-red-500 p-1">
-                <User size={18} />
+                <User size={16} />
               </button>
               <button
                 onClick={toggleMenu}
-                className="text-gray-600 hover:text-red-500 p-2"
+                className="text-gray-600 hover:text-red-500 p-1.5"
               >
-                {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
-              </button>
-            </div>
-
-            {/* Medium screen menu button (tablet) */}
-            <div className="hidden md:block lg:hidden">
-              <button
-                onClick={toggleMenu}
-                className="text-gray-600 hover:text-red-500 p-2"
-              >
-                {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                {isMenuOpen ? <X size={18} /> : <Menu size={18} />}
               </button>
             </div>
           </div>
@@ -298,20 +294,20 @@ const Navbar = () => {
       {/* Mobile and tablet menu */}
       {isMenuOpen && (
         <div className="lg:hidden border-b border-gray-100">
-          <div className="px-4 pt-2 pb-3 space-y-1 bg-white">
+          <div className="px-3 sm:px-4 pt-2 pb-3 space-y-1 bg-white">
             {/* Mobile/Tablet navigation with dropdowns */}
             <div className="space-y-1">
               <button
                 onClick={() => toggleDropdown('mobile-home')}
-                className="w-full text-left text-gray-800 hover:text-red-500 flex items-center justify-between px-3 py-2 text-sm font-medium"
+                className="w-full text-left text-gray-800 hover:text-red-500 flex items-center justify-between px-2 sm:px-3 py-2 text-sm font-medium"
               >
                 Home
                 <ChevronDown size={16} className={`transition-transform ${activeDropdown === 'mobile-home' ? 'rotate-180' : ''}`} />
               </button>
               {activeDropdown === 'mobile-home' && (
-                <div className="ml-4 space-y-1">
-                  <a href="#" className="block px-3 py-2 text-sm text-gray-600 hover:text-red-500">Home Option 1</a>
-                  <a href="#" className="block px-3 py-2 text-sm text-gray-600 hover:text-red-500">Home Option 2</a>
+                <div className="ml-3 sm:ml-4 space-y-1">
+                  <a href="#" className="block px-2 sm:px-3 py-2 text-sm text-gray-600 hover:text-red-500">Home Option 1</a>
+                  <a href="#" className="block px-2 sm:px-3 py-2 text-sm text-gray-600 hover:text-red-500">Home Option 2</a>
                 </div>
               )}
             </div>
@@ -319,15 +315,15 @@ const Navbar = () => {
             <div className="space-y-1">
               <button
                 onClick={() => toggleDropdown('mobile-recipes')}
-                className="w-full text-left text-gray-800 hover:text-red-500 flex items-center justify-between px-3 py-2 text-sm font-medium"
+                className="w-full text-left text-gray-800 hover:text-red-500 flex items-center justify-between px-2 sm:px-3 py-2 text-sm font-medium"
               >
                 Recipes
                 <ChevronDown size={16} className={`transition-transform ${activeDropdown === 'mobile-recipes' ? 'rotate-180' : ''}`} />
               </button>
               {activeDropdown === 'mobile-recipes' && (
-                <div className="ml-4 space-y-1">
-                  <a href="#" className="block px-3 py-2 text-sm text-gray-600 hover:text-red-500">All Recipes</a>
-                  <a href="#" className="block px-3 py-2 text-sm text-gray-600 hover:text-red-500">Popular Recipes</a>
+                <div className="ml-3 sm:ml-4 space-y-1">
+                  <a href="#" className="block px-2 sm:px-3 py-2 text-sm text-gray-600 hover:text-red-500">All Recipes</a>
+                  <a href="#" className="block px-2 sm:px-3 py-2 text-sm text-gray-600 hover:text-red-500">Popular Recipes</a>
                 </div>
               )}
             </div>
@@ -335,15 +331,15 @@ const Navbar = () => {
             <div className="space-y-1">
               <button
                 onClick={() => toggleDropdown('mobile-cuisines')}
-                className="w-full text-left text-gray-800 hover:text-red-500 flex items-center justify-between px-3 py-2 text-sm font-medium"
+                className="w-full text-left text-gray-800 hover:text-red-500 flex items-center justify-between px-2 sm:px-3 py-2 text-sm font-medium"
               >
                 Cuisines
                 <ChevronDown size={16} className={`transition-transform ${activeDropdown === 'mobile-cuisines' ? 'rotate-180' : ''}`} />
               </button>
               {activeDropdown === 'mobile-cuisines' && (
-                <div className="ml-4 space-y-1">
-                  <a href="#" className="block px-3 py-2 text-sm text-gray-600 hover:text-red-500">Italian</a>
-                  <a href="#" className="block px-3 py-2 text-sm text-gray-600 hover:text-red-500">Chinese</a>
+                <div className="ml-3 sm:ml-4 space-y-1">
+                  <a href="#" className="block px-2 sm:px-3 py-2 text-sm text-gray-600 hover:text-red-500">Italian</a>
+                  <a href="#" className="block px-2 sm:px-3 py-2 text-sm text-gray-600 hover:text-red-500">Chinese</a>
                 </div>
               )}
             </div>
@@ -351,15 +347,15 @@ const Navbar = () => {
             <div className="space-y-1">
               <button
                 onClick={() => toggleDropdown('mobile-categories')}
-                className="w-full text-left text-gray-800 hover:text-red-500 flex items-center justify-between px-3 py-2 text-sm font-medium"
+                className="w-full text-left text-gray-800 hover:text-red-500 flex items-center justify-between px-2 sm:px-3 py-2 text-sm font-medium"
               >
                 Categories
                 <ChevronDown size={16} className={`transition-transform ${activeDropdown === 'mobile-categories' ? 'rotate-180' : ''}`} />
               </button>
               {activeDropdown === 'mobile-categories' && (
-                <div className="ml-4 space-y-1">
-                  <a href="#" className="block px-3 py-2 text-sm text-gray-600 hover:text-red-500">Breakfast</a>
-                  <a href="#" className="block px-3 py-2 text-sm text-gray-600 hover:text-red-500">Lunch</a>
+                <div className="ml-3 sm:ml-4 space-y-1">
+                  <a href="#" className="block px-2 sm:px-3 py-2 text-sm text-gray-600 hover:text-red-500">Breakfast</a>
+                  <a href="#" className="block px-2 sm:px-3 py-2 text-sm text-gray-600 hover:text-red-500">Lunch</a>
                 </div>
               )}
             </div>

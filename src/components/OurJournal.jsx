@@ -167,17 +167,19 @@ export default function OurJournal() {
             {/* Article Content */}
             <div className="p-6 pb-4">
               <h3 className="text-xl tracking-tighter font-bold mb-4 leading-snug text-black hover:text-red-500 hover:cursor-pointer">{article.title}</h3>
-              <div className="flex items-center justify-between text-black text-sm  gap-y-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-black text-sm gap-y-1">
                 <span>by <span className="font-bold text-black hover:text-red-500 hover:cursor-pointer">{article.author}</span></span>
                 {/* <span className="mx-1">•</span> */}
-                <div className='flex items-center text-sm text-semibold gap-x-1 text-gray-500 tracking-tighter'>
-                <Clock className="w-4 h-4" />
-                <span>{article.date}</span>
-                </div>
-                {/* <span className="mx-1">•</span> */}
-                <div className='flex items-center text-xs text-gray-500 tracking-tighter'>
-                <MessageCircle className="inline w-4 h-4 mr-1" />
-                <span>{article.comments}</span>
+                <div className='flex items-center justify-between sm:justify-start sm:gap-x-4'>
+                  <div className='flex items-center text-sm text-semibold gap-x-1 text-gray-500 tracking-tighter'>
+                  <Clock className="w-4 h-4" />
+                  <span>{article.date}</span>
+                  </div>
+                  {/* <span className="mx-1">•</span> */}
+                  <div className='flex items-center text-xs text-gray-500 tracking-tighter'>
+                  <MessageCircle className="inline w-4 h-4 mr-1" />
+                  <span>{article.comments}</span>
+                  </div>
                 </div>
               </div>
               <div className="text-gray-500 text-bold text-xs mt-2 flex items-center gap-2">
