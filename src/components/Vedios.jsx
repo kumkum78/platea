@@ -108,7 +108,7 @@ const videos = [
   },
 ];
 
-export default function Vedios() {
+export default function Vedios({id}) {
   const [videosState, setVideosState] = useState(videos);
 
   const toggleLike = (id) => {
@@ -128,7 +128,7 @@ export default function Vedios() {
   };
 
   return (
-    <div className="max-w-[90%] mx-auto px-4 py-12">
+    <div id={id} className="max-w-[90%] mx-auto px-4 py-12">
       {/* Explore All Recipes Button */}
       <div className="flex items-center justify-center mb-18">
   <div className="flex-grow h-px bg-gray-200"></div>

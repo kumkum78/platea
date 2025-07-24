@@ -1,9 +1,9 @@
 import React from 'react';
 import { Star } from 'lucide-react';
 
-export default function Discover() {
+export default function Discover({ id }) {
   return (
-    <div className="relative w-full sm:w-[90%] lg:w-[86%] rounded-none sm:rounded-2xl lg:rounded-3xl lg:mt-4 lg:mb-8 m-auto overflow-hidden">
+    <div id={id} className="relative w-full sm:w-[90%] lg:w-[86%] rounded-none sm:rounded-2xl lg:rounded-3xl lg:mt-4 lg:mb-8 m-auto overflow-hidden">
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{

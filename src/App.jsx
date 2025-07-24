@@ -16,9 +16,9 @@ export default function App() {
       <main>
         <Hero />
         <WhatWeDo />
-        <Discover />
+        <Discover id="discover-section" />
         <NewRecipe />
-        <Vedios />
+        <Vedios id="videos-section" />
         <AboutUs />
         <OurJournal />
       </main>
