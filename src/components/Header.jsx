@@ -11,15 +11,40 @@ import {
 import Login from "./Login";
 import AZRecipesModal from "./AZRecipesModal";
 import ContactModal from "./ContactModal";
+import SearchModal from "./SearchModal";
 
-const Navbar = () => {
+const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [isSticky, setIsSticky] = useState(false);
-
   const [isAZModalOpen, setIsAZModalOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
+  const [recipeTitle, setRecipeTitle] = useState("");
+  const [recipeDescription, setRecipeDescription] = useState("");
+  const [recipeIngredients, setRecipeIngredients] = useState([""]);
+  const [recipeSteps, setRecipeSteps] = useState([""]);
+  const [recipeTags, setRecipeTags] = useState("");
+  // Add back image state and handler for file input
+  const [recipeImage, setRecipeImage] = useState(null);
+  const fileInputRef = React.useRef(null);
+  const handleImageChange = e => setRecipeImage(e.target.files[0]);
+  const handleAddImageClick = () => fileInputRef.current && fileInputRef.current.click();
+
+  const toggleCategories = () => {
+    setIsCategoriesOpen(!isCategoriesOpen);
+  };
+
+  const openSearch = () => {
+    setIsSearchOpen(true);
+  };
+
+  const closeSearch = () => {
+    setIsSearchOpen(false);
+  };
 
   const socialLinks = {
     instagram: "https://www.instagram.com/homecookingshow/",
@@ -34,10 +59,18 @@ const Navbar = () => {
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-
   const openLogin = () => setIsLoginOpen(true);
   const closeLogin = () => setIsLoginOpen(false);
+
+  const handleOpenAddRecipe = () => setShowAddRecipeModal(true);
+  const handleCloseAddRecipe = () => setShowAddRecipeModal(false);
+  const handleAddIngredient = () => setRecipeIngredients([...recipeIngredients, ""]);
+  const handleIngredientChange = (idx, value) => setRecipeIngredients(recipeIngredients.map((ing, i) => i === idx ? value : ing));
+  const handleRemoveIngredient = idx => setRecipeIngredients(recipeIngredients.filter((_, i) => i !== idx));
+  const handleAddStep = () => setRecipeSteps([...recipeSteps, ""]);
+  const handleStepChange = (idx, value) => setRecipeSteps(recipeSteps.map((step, i) => i === idx ? value : step));
+  const handleRemoveStep = idx => setRecipeSteps(recipeSteps.filter((_, i) => i !== idx));
+  const handleCreateRecipe = e => { e.preventDefault(); /* handle recipe creation logic here */ handleCloseAddRecipe(); };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,12 +86,59 @@ const Navbar = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const toggleCategories = () => {
-    setIsCategoriesOpen(!isCategoriesOpen);
-  };
-
   const toggleDropdown = (dropdown) => {
     setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
+  };
+
+  const handleCategoryClick = (category) => {
+    setIsCategoriesOpen(false);
+    switch (category) {
+      case 'videos': {
+        // Scroll to videos section
+        const videosSection = document.getElementById('videos-section');
+        if (videosSection) {
+          videosSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        break;
+      }
+      case 'az-recipes': {
+        // Show AZ Recipes Modal
+        onShowAZModal();
+        break;
+      }
+      case 'this-week': {
+        // Scroll to discover section
+        const discoverSection = document.getElementById('discover-section');
+        if (discoverSection) {
+          discoverSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        break;
+      }
+      case 'popular': {
+        // Fetch popular recipes (you can customize the category)
+        onShowCategoryRecipes('Popular', 'Miscellaneous');
+        break;
+      }
+      case 'breakfast': {
+        onShowCategoryRecipes('Breakfast', 'Breakfast');
+        break;
+      }
+      case 'lunch': {
+        // Using a lunch-appropriate category
+        onShowCategoryRecipes('Lunch', 'Chicken');
+        break;
+      }
+      case 'dinner': {
+        onShowCategoryRecipes('Dinner', 'Beef');
+        break;
+      }
+      case 'dessert': {
+        onShowCategoryRecipes('Dessert', 'Dessert');
+        break;
+      }
+      default:
+        break;
+    }
   };
 
   return (
@@ -69,10 +149,15 @@ const Navbar = () => {
           <div className="flex items-center justify-between min-h-[32px]">
             <div className="hidden md:flex items-center justify-center space-x-6 text-xs text-gray-600">
               <div className="flex items-center space-x-4 border-r border-gray-300 pr-6">
-                <div className="flex items-center justify-center space-x-3 relative">
+                {/* Recipe Categories (top left) */}
+                <div
+                  className="flex items-center justify-center space-x-3 relative"
+                  onMouseEnter={() => setIsCategoriesOpen(true)}
+                  onMouseLeave={() => setIsCategoriesOpen(false)}
+                >
                   <button
-                    onClick={toggleCategories}
                     className="flex items-center space-x-3"
+                    type="button"
                   >
                     <Menu
                       className="text-gray-500 hover:text-red-500 cursor-pointer"
@@ -82,57 +167,56 @@ const Navbar = () => {
                       Recipe Categories
                     </span>
                   </button>
-
                   {isCategoriesOpen && (
-                    <div className="absolute top-8 left-0 z-50 w-56 bg-white rounded-md shadow-lg border py-2">
-                      <a
-                        href="#"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
+                    <div className="absolute top-6 left-0 z-50 w-56 bg-white rounded-md shadow-lg border py-2">
+                      <button
+                        onClick={() => handleCategoryClick('videos')}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
                       >
                         Video Recipes
-                      </a>
-                      <a
-                        href="#"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
+                      </button>
+                      <button
+                        onClick={() => setIsAZModalOpen(true)}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
                       >
                         A-Z Recipes
-                      </a>
-                      <a
-                        href="#"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
+                      </button>
+                      <button
+                        onClick={() => handleCategoryClick('this-week')}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
                       >
                         This Week's Recipes
-                      </a>
-                      <a
-                        href="#"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
+                      </button>
+                      <button
+                        onClick={() => handleCategoryClick('popular')}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
                       >
                         Popular Recipes
-                      </a>
-                      <a
-                        href="#"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
+                      </button>
+                      <button
+                        onClick={() => handleCategoryClick('breakfast')}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
                       >
                         Breakfast Recipes
-                      </a>
-                      <a
-                        href="#"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
+                      </button>
+                      <button
+                        onClick={() => handleCategoryClick('lunch')}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
                       >
                         Lunch Recipes
-                      </a>
-                      <a
-                        href="#"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
+                      </button>
+                      <button
+                        onClick={() => handleCategoryClick('dinner')}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
                       >
                         Dinner Recipes
-                      </a>
-                      <a
-                        href="#"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
+                      </button>
+                      <button
+                        onClick={() => handleCategoryClick('dessert')}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
                       >
                         Dessert Recipes
-                      </a>
+                      </button>
                     </div>
                   )}
                 </div>
@@ -363,13 +447,16 @@ const Navbar = () => {
                 <div className="flex items-center space-x-8">
                   <div className="relative">
                     <button
-                      onClick={() => toggleDropdown("home")}
+                      onClick={() => {
+                        const heroSection = document.getElementById("hero-section");
+                        if (heroSection) heroSection.scrollIntoView({ behavior: "smooth" });
+                      }}
                       className="text-gray-800 hover:text-red-500 hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
                     >
                       Home
-                      <ChevronDown size={14} className="ml-1 mt-1" />
+                      {/* <ChevronDown size={14} className="ml-1 mt-1" /> */}
                     </button>
-                    {activeDropdown === "home" && (
+                    {/* {activeDropdown === "home" && (
                       <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
                         <a
                           href="#"
@@ -384,18 +471,21 @@ const Navbar = () => {
                           Home Option 2
                         </a>
                       </div>
-                    )}
+                    )} */}
                   </div>
 
                   <div className="relative">
                     <button
-                      onClick={() => toggleDropdown("recipes")}
+                      onClick={() => {
+                        const newRecipeSection = document.getElementById("new-recipe-section");
+                        if (newRecipeSection) newRecipeSection.scrollIntoView({ behavior: "smooth" });
+                      }}
                       className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
                     >
                       Recipes
-                      <ChevronDown size={14} className="ml-1 mt-1" />
+                      {/* <ChevronDown size={14} className="ml-1 mt-1" /> */}
                     </button>
-                    {activeDropdown === "recipes" && (
+                    {/* {activeDropdown === "recipes" && (
                       <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
                         <a
                           href="#"
@@ -410,112 +500,101 @@ const Navbar = () => {
                           Popular Recipes
                         </a>
                       </div>
-                    )}
+                    )} */}
                   </div>
 
-                  <div className="relative">
+                  {/* Cuisines */}
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setActiveDropdown("cuisines")}
+                    onMouseLeave={() => setActiveDropdown(null)}
+                  >
                     <button
-                      onClick={() => toggleDropdown("cuisines")}
                       className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
+                      type="button"
                     >
                       Cuisines
                       <ChevronDown size={14} className="ml-1 mt-1" />
                     </button>
                     {activeDropdown === "cuisines" && (
-                      <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
-                        <a
-                          href="#"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          Italian
-                        </a>
-                        <a
-                          href="#"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          Chinese
-                        </a>
+                      <div className="absolute z-50 w-48 bg-white rounded-md shadow-lg border py-1">
+                        <a onClick={() => onShowCategoryRecipes('Italian', 'Italian', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Italian</a>
+                        <a onClick={() => onShowCategoryRecipes('French', 'French', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">French</a>
+                        <a onClick={() => onShowCategoryRecipes('Mexican', 'Mexican', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Mexican</a>
+                        <a onClick={() => onShowCategoryRecipes('Japanese', 'Japanese', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Japanese</a>
+                        <a onClick={() => onShowCategoryRecipes('Chinese', 'Chinese', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Chinese</a>
+                        <a onClick={() => onShowCategoryRecipes('Greek', 'Greek', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Greek</a>
+                        <a onClick={() => onShowCategoryRecipes('Spanish', 'Spanish', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Spanish</a>
+                        <a onClick={() => onShowCategoryRecipes('Thai', 'Thai', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Thai</a>
+                        <a onClick={() => onShowCategoryRecipes('Turkish', 'Turkish', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Turkish</a>
+                        <a onClick={() => onShowCategoryRecipes('Indian', 'Indian', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Indian</a>
+                        <a onClick={() => onShowCategoryRecipes('Moroccan', 'Moroccan', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Moroccan</a>
+                        <a onClick={() => onShowCategoryRecipes('American', 'American', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">American</a>
+                        <a onClick={() => onShowCategoryRecipes('British', 'British', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">British</a>
                       </div>
                     )}
                   </div>
 
-                  <div className="relative">
+                  {/* Categories */}
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setActiveDropdown("categories")}
+                    onMouseLeave={() => setActiveDropdown(null)}
+                  >
                     <button
-                      onClick={() => toggleDropdown("categories")}
                       className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
+                      type="button"
                     >
                       Categories
                       <ChevronDown size={14} className="ml-1 mt-1" />
                     </button>
                     {activeDropdown === "categories" && (
-                      <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
-                        <a
-                          href="#"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          Breakfast
-                        </a>
-                        <a
-                          href="#"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          Lunch
-                        </a>
+                      <div className="absolute z-50 w-48 bg-white rounded-md shadow-lg border py-1">
+                        <a onClick={() => onShowCategoryRecipes('Beef', 'Beef', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Beef</a>
+                        <a onClick={() => onShowCategoryRecipes('Chicken', 'Chicken', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Chicken</a>
+                        <a onClick={() => onShowCategoryRecipes('Dessert', 'Dessert', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Dessert</a>
+                        <a onClick={() => onShowCategoryRecipes('Lamb', 'Lamb', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Lamb</a>
+                        <a onClick={() => onShowCategoryRecipes('Miscellaneous', 'Miscellaneous', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Miscellaneous</a>
+                        <a onClick={() => onShowCategoryRecipes('Pasta', 'Pasta', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Pasta</a>
+                        <a onClick={() => onShowCategoryRecipes('Pork', 'Pork', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Pork</a>
+                        <a onClick={() => onShowCategoryRecipes('Seafood', 'Seafood', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Seafood</a>
+                        <a onClick={() => onShowCategoryRecipes('Side', 'Side', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Side</a>
+                        <a onClick={() => onShowCategoryRecipes('Starter', 'Starter', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Starter</a>
+                        <a onClick={() => onShowCategoryRecipes('Vegan', 'Vegan', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Vegan</a>
+                        <a onClick={() => onShowCategoryRecipes('Vegetarian', 'Vegetarian', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Vegetarian</a>
+                        <a onClick={() => onShowCategoryRecipes('Breakfast', 'Breakfast', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Breakfast</a>
+                        <a onClick={() => onShowCategoryRecipes('Goat', 'Goat', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Goat</a>
                       </div>
                     )}
                   </div>
 
-                  <div className="relative">
+                  {/* Blog */}
+                  <div
+                    className="relative"
+                    onMouseEnter={() => setActiveDropdown("blog")}
+                    onMouseLeave={() => setActiveDropdown(null)}
+                  >
                     <button
-                      onClick={() => toggleDropdown("blog")}
                       className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
+                      type="button"
                     >
                       Blog
                       <ChevronDown size={14} className="ml-1 mt-1" />
                     </button>
                     {activeDropdown === "blog" && (
-                      <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
-                        <a
-                          href="#"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          Latest Posts
-                        </a>
-                        <a
-                          href="#"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          Cooking Tips
-                        </a>
+                      <div className="absolute z-50 w-48 bg-white rounded-md shadow-lg border py-1">
+                        <a onClick={() => onShowBlogArticle('Healthy Eating')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Essential Cooking Tips</a>
+                        <a onClick={() => onShowBlogArticle('Easy Dinner Recipes')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Quick & Healthy Weeknight Dinners</a>
+                        <a onClick={() => onShowBlogArticle('Baking Tips')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Mastering the Art of One-Pot Cooking</a>
+                        <a onClick={() => onShowBlogArticle('Vegetarian Meals')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Cooking on a Budget</a>
+                        <a onClick={() => onShowBlogArticle('Food Science')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Baking Basics</a>
+                        <a onClick={() => onShowBlogArticle('Global Cuisine')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Spices That Instantly Elevate Any Dish</a>
+                        <a onClick={() => onShowBlogArticle('Meal Prep Ideas')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Meal Prep Ideas</a>
+                        <a onClick={() => onShowBlogArticle('Restaurant News')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">From Fridge to Feast</a>
                       </div>
                     )}
                   </div>
 
-                  <div className="relative">
-                    <button
-                      onClick={() => toggleDropdown("features")}
-                      className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
-                    >
-                      Features
-                      <ChevronDown size={14} className="ml-1  mt-1" />
-                    </button>
-                    {activeDropdown === "features" && (
-                      <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
-                        <a
-                          href="#"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          Meal Planner
-                        </a>
-                        <a
-                          href="#"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        >
-                          Recipe Calculator
-                        </a>
-                      </div>
-                    )}
-                  </div>
                 </div>
               </div>
             </div>
@@ -532,10 +611,17 @@ const Navbar = () => {
                 <User size={20} />
               </button>
               <Login isOpen={isLoginOpen} onClose={closeLogin} />
-              <button className="text-black hover:text-red-500 hover:cursor-pointer p-1">
+              <button
+                className="text-black hover:text-red-500 hover:cursor-pointer p-1"
+                onClick={openSearch}
+              >
                 <Search size={20} />
               </button>
-              <button className="bg-gray-200 hover:bg-red-500 hover:text-white text-black px-4.5 py-2.5 font-semibold tracking-tighter rounded-md text-sm font-medium hover:cursor-pointer ">
+              <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
+              <button
+                className="bg-gray-200 hover:bg-red-500 hover:text-white text-black px-4.5 py-2.5 font-semibold tracking-tighter rounded-md text-sm font-medium hover:cursor-pointer "
+                onClick={handleOpenAddRecipe}
+              >
                 Add Recipe
               </button>
             </div>
@@ -805,6 +891,64 @@ const Navbar = () => {
                 <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.097.118.112.222.082.343-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.744-1.378l-.628 2.43c-.226.869-.835 1.958-1.244 2.621.937.29 1.931.446 2.962.446 6.624 0 11.99-5.367 11.99-11.987C24.007 5.367 18.641.001 12.017.001z" />
               </svg>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showAddRecipeModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-xl w-full max-h-[90vh] overflow-y-auto relative p-8">
+            <button className="absolute top-4 right-4 text-gray-500 hover:text-red-500" onClick={handleCloseAddRecipe}>✕</button>
+            <h2 className="text-2xl font-bold mb-4 text-center">Register</h2>
+            <form onSubmit={handleCreateRecipe}>
+              <div className="mb-4">
+                <label className="block font-semibold mb-1">Title</label>
+                <input type="text" className="w-full border rounded px-3 py-2" value={recipeTitle} onChange={e => setRecipeTitle(e.target.value)} required />
+              </div>
+              <div className="mb-4">
+                <label className="block font-semibold mb-1">Description</label>
+                <textarea className="w-full border rounded px-3 py-2" value={recipeDescription} onChange={e => setRecipeDescription(e.target.value)} required />
+              </div>
+              <div className="mb-4">
+                <label className="block font-semibold mb-1">Image</label>
+                <input
+                  type="file"
+                  className="w-full hidden"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                  accept="image/*"
+                />
+                <button type="button" className="text-blue-600 underline" onClick={handleAddImageClick}>
+                  + Add Image
+                </button>
+                {recipeImage && <div className="mt-2 text-sm text-gray-700">Selected: {recipeImage.name}</div>}
+              </div>
+              <div className="mb-4">
+                <label className="block font-semibold mb-1">Ingredients</label>
+                {recipeIngredients.map((ing, idx) => (
+                  <div key={idx} className="flex mb-2">
+                    <input type="text" className="w-full border rounded px-3 py-2" value={ing} onChange={e => handleIngredientChange(idx, e.target.value)} required />
+                    <button type="button" className="ml-2 text-red-500" onClick={() => handleRemoveIngredient(idx)}>✕</button>
+                  </div>
+                ))}
+                <button type="button" className="text-blue-600 underline" onClick={handleAddIngredient}>+ Add Ingredient</button>
+              </div>
+              <div className="mb-4">
+                <label className="block font-semibold mb-1">Steps</label>
+                {recipeSteps.map((step, idx) => (
+                  <div key={idx} className="flex mb-2">
+                    <input type="text" className="w-full border rounded px-3 py-2" value={step} onChange={e => handleStepChange(idx, e.target.value)} required />
+                    <button type="button" className="ml-2 text-red-500" onClick={() => handleRemoveStep(idx)}>✕</button>
+                  </div>
+                ))}
+                <button type="button" className="text-blue-600 underline" onClick={handleAddStep}>+ Add Step</button>
+              </div>
+              <div className="mb-4">
+                <label className="block font-semibold mb-1">Tags (comma separated)</label>
+                <input type="text" className="w-full border rounded px-3 py-2" value={recipeTags} onChange={e => setRecipeTags(e.target.value)} />
+              </div>
+              <button type="submit" className="w-full bg-red-500 text-white py-2 rounded font-semibold mt-4">Create Recipe</button>
+            </form>
           </div>
         </div>
       )}

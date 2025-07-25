@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Heart, Bookmark, Clock, User } from "lucide-react";
 
 const categories = [
@@ -11,7 +11,25 @@ const categories = [
   "Other Recipes",
 ];
 
-const recipes = [
+const categoryMap = {
+  "Appetizers": "Side",
+  "Main Dishes": "Beef",
+  "Desserts": "Dessert",
+  "Drinks": "Ordinary Drink",
+  "Healthy": "Vegetarian",
+  "Other Recipes": "Miscellaneous",
+};
+
+const randomTime = () => {
+  const mins = ["30 min", "35 min", "40 min", "45 min", "50 min", "55 min", "60 min"];
+  return mins[Math.floor(Math.random() * mins.length)];
+};
+const randomDifficulty = () => {
+  const diffs = ["Beginner", "Easy", "Intermediate", "Advanced"];
+  return diffs[Math.floor(Math.random() * diffs.length)];
+};
+
+const fallbackRecipes = [
   {
     id: 1,
     category: "Pasta",
@@ -21,7 +39,6 @@ const recipes = [
     time: "5 min",
     difficulty: "Beginner",
     cuisine: "Lebanese",
-    flag: "🇱🇧",
     liked: false,
     bookmarked: false,
   },
@@ -34,7 +51,6 @@ const recipes = [
     time: "60 min",
     difficulty: "Beginner",
     cuisine: "Moroccan",
-    flag: "🇲🇦",
     liked: true,
     bookmarked: false,
   },
@@ -47,7 +63,6 @@ const recipes = [
     time: "15 min",
     difficulty: "Easy",
     cuisine: "French",
-    flag: "🇫🇷",
     liked: false,
     bookmarked: false,
   },
@@ -60,7 +75,6 @@ const recipes = [
     time: "60 min",
     difficulty: "Advanced",
     cuisine: "Thai",
-    flag: "🇹🇭",
     liked: false,
     bookmarked: false,
   },
@@ -73,7 +87,6 @@ const recipes = [
     time: "80 min",
     difficulty: "Advanced",
     cuisine: "Ethiopian",
-    flag: "🇪🇹",
     liked: false,
     bookmarked: false,
   },
@@ -86,7 +99,6 @@ const recipes = [
     time: "100 min",
     difficulty: "Advanced",
     cuisine: "Korean",
-    flag: "🇰🇷",
     liked: false,
     bookmarked: false,
   },
@@ -99,7 +111,6 @@ const recipes = [
     time: "30 min",
     difficulty: "Easy",
     cuisine: "Thai",
-    flag: "🇹🇭",
     liked: false,
     bookmarked: false,
   },
@@ -112,45 +123,142 @@ const recipes = [
     time: "20 min",
     difficulty: "Advanced",
     cuisine: "Lebanese",
-    flag: "🇱🇧",
     liked: false,
     bookmarked: false,
   },
 ];
 
+const getIngredientsList = (meal) => {
+  const ingredients = [];
+  for (let i = 1; i <= 20; i++) {
+    const ingredient = meal[`strIngredient${i}`];
+    const measure = meal[`strMeasure${i}`];
+    if (ingredient && ingredient.trim()) {
+      ingredients.push(`${measure ? measure.trim() + ' ' : ''}${ingredient.trim()}`);
+    }
+  }
+  return ingredients;
+};
+
 const NewRecipe = () => {
   const [activeCategory, setActiveCategory] = useState("All Recipes");
-  const [recipesState, setRecipesState] = useState(recipes);
+  const [recipesState, setRecipesState] = useState(fallbackRecipes);
+  const [loading, setLoading] = useState(false);
+  const [liked, setLiked] = useState({});
+  const [bookmarked, setBookmarked] = useState({});
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalRecipe, setModalRecipe] = useState(null);
+  const [modalLoading, setModalLoading] = useState(false);
 
-  const toggleLike = (id) => {
-    setRecipesState((prev) =>
-      prev.map((recipe) =>
-        recipe.id === id ? { ...recipe, liked: !recipe.liked } : recipe
-      )
-    );
+  useEffect(() => {
+    let ignore = false;
+    async function fetchRecipes() {
+      setLoading(true);
+      if (activeCategory === "All Recipes") {
+        try {
+          const res = await fetch("https://www.themealdb.com/api/json/v1/1/search.php?s=");
+          const data = await res.json();
+          if (!ignore && data.meals && data.meals.length > 0) {
+            setRecipesState(data.meals.slice(0, 8));
+          } else if (!ignore) {
+            setRecipesState(fallbackRecipes);
+          }
+        } catch {
+          if (!ignore) setRecipesState(fallbackRecipes);
+        }
+      } else if (activeCategory === "Drinks") {
+        // Fetch from TheCocktailDB
+        try {
+          const res = await fetch("https://www.thecocktaildb.com/api/json/v1/1/filter.php?c=Ordinary_Drink");
+          const data = await res.json();
+          if (data.drinks && data.drinks.length > 0) {
+            setRecipesState(data.drinks.slice(0, 8));
+          } else if (!ignore) {
+            setRecipesState(fallbackRecipes);
+          }
+        } catch {
+          if (!ignore) setRecipesState(fallbackRecipes);
+        }
+      } else {
+        // Map to valid category
+        const apiCategory = categoryMap[activeCategory];
+        if (!apiCategory) {
+          setRecipesState(fallbackRecipes);
+          setLoading(false);
+          return;
+        }
+        try {
+          const res = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${encodeURIComponent(apiCategory)}`);
+          const data = await res.json();
+          if (data.meals && data.meals.length > 0) {
+            // Fetch full details for first 8 meals
+            const detailPromises = data.meals.slice(0, 8).map(async (meal) => {
+              const detailRes = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`);
+              const detailData = await detailRes.json();
+              return detailData.meals && detailData.meals[0] ? detailData.meals[0] : meal;
+            });
+            const detailedMeals = await Promise.all(detailPromises);
+            if (!ignore) setRecipesState(detailedMeals);
+          } else if (!ignore) {
+            setRecipesState(fallbackRecipes);
+          }
+        } catch {
+          if (!ignore) setRecipesState(fallbackRecipes);
+        }
+      }
+      setLoading(false);
+    }
+    fetchRecipes();
+    return () => { ignore = true; };
+  }, [activeCategory]);
+
+  const toggleLike = (id) => setLiked((prev) => ({ ...prev, [id]: !prev[id] }));
+  const toggleBookmark = (id) => setBookmarked((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const handleOpenRecipeModal = async (recipe) => {
+    setModalOpen(true);
+    setModalRecipe(null);
+    setModalLoading(true);
+    // Drinks from TheCocktailDB
+    if (recipe.idDrink) {
+      try {
+        const res = await fetch(`https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=${recipe.idDrink}`);
+        const data = await res.json();
+        if (data.drinks && data.drinks.length > 0) {
+          setModalRecipe(data.drinks[0]);
+        } else {
+          setModalRecipe(null);
+        }
+      } catch {
+        setModalRecipe(null);
+      }
+      setModalLoading(false);
+      return;
+    }
+    // Meals from TheMealDB
+    const id = recipe.idMeal || recipe.id;
+    try {
+      const res = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${id}`);
+      const data = await res.json();
+      if (data.meals && data.meals.length > 0) {
+        setModalRecipe(data.meals[0]);
+      } else {
+        setModalRecipe(null);
+      }
+    } catch {
+      setModalRecipe(null);
+    }
+    setModalLoading(false);
   };
-
-  const toggleBookmark = (id) => {
-    setRecipesState((prev) =>
-      prev.map((recipe) =>
-        recipe.id === id
-          ? { ...recipe, bookmarked: !recipe.bookmarked }
-          : recipe
-      )
-    );
+  const handleCloseRecipeModal = () => {
+    setModalOpen(false);
+    setModalRecipe(null);
   };
-
-  // Filter recipes by category
-  const filteredRecipes =
-    activeCategory === "All Recipes"
-      ? recipesState
-      : recipesState.filter((r) => r.category === activeCategory);
 
   return (
-    <div className="max-w-[88%] mx-auto px-4 py-4">
+    <div id="new-recipe-section" className="max-w-[88%] mx-auto px-4 py-4">
       {/* New Recipes Section */}
       <div className="relative flex flex-col items-center mb-10 py-6">
-        {/* Optional faint icon background */}
         <span className="absolute text-[8rem] opacity-15 z-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 select-none pointer-events-none">
           🍴
         </span>
@@ -162,24 +270,6 @@ const NewRecipe = () => {
           indulgent desserts.
         </p>
       </div>
-
-      {/* Category Filters */}
-      {/* <div className="flex flex-wrap gap-2 justify-center mb-8">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`px-5 py-2 text-sm font-semibold rounded-full transition-colors duration-200 border focus:outline-none ${
-              activeCategory === cat
-                ? 'bg-red-500 text-white border-red-500'
-                : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-100'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div> */}
-
       <div className="flex flex-wrap gap-2 justify-center mb-8">
         {categories.map((cat) => (
           <button
@@ -195,90 +285,166 @@ const NewRecipe = () => {
           </button>
         ))}
       </div>
-
-      {/* Recipe Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        {filteredRecipes.map((recipe) => (
-          <div
-            key={recipe.id}
-            className="bg-white rounded-xl overflow-hidden"
-          >
-            {/* Image Container */}
-            <div className="relative group cursor-pointer">
-              <img
-                src={recipe.image}
-                alt={recipe.title}
-                className="w-full h-94 object-cover"
-              />
-              {/* Top Overlay Icons */}
-              <div className="absolute top-3 left-3">
-                <div className="bg-white bg-opacity-90 rounded-full px-2 py-1 flex items-center space-x-1">
-                  <span className="text-yellow-400 text-sm">★</span>
-                  <span className="text-xs font-medium text-gray-800">
-                    {recipe.rating}
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <span className="text-3xl animate-spin">🍴</span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          {recipesState.map((recipe, idx) => (
+            <div
+              key={recipe.idMeal || recipe.idDrink || recipe.id || idx}
+              className="bg-white rounded-xl overflow-hidden"
+            >
+              {/* Image Container */}
+              <div className="relative group cursor-pointer">
+                <img
+                  src={recipe.strMealThumb || recipe.strDrinkThumb || recipe.image}
+                  alt={recipe.strMeal || recipe.strDrink || recipe.title}
+                  className="w-full h-94 object-cover"
+                />
+                {/* Top Overlay Icons */}
+                <div className="absolute top-3 left-3">
+                  <div className="bg-white bg-opacity-90 rounded-full px-2 py-1 flex items-center space-x-1">
+                    <span className="text-yellow-400 text-sm">★</span>
+                    <span className="text-xs font-medium text-gray-800">
+                      {recipe.rating || "4.8"}
+                    </span>
+                  </div>
+                </div>
+                <div className="absolute top-3 right-3 flex flex-col space-y-2">
+                  <button
+                    onClick={() => toggleLike(recipe.idMeal || recipe.idDrink || recipe.id || idx)}
+                    className={`p-2 rounded-full transition-colors duration-200 focus:outline-none ${
+                      liked[recipe.idMeal || recipe.idDrink || recipe.id || idx]
+                        ? "bg-red-500 text-white hover:cursor-pointer"
+                        : "bg-white text-red-500 hover:bg-gray-50 hover:cursor-pointer hover:bg-red-500 hover:text-white"
+                    }`}
+                  >
+                    <Heart
+                      size={22}
+                      fill={liked[recipe.idMeal || recipe.idDrink || recipe.id || idx] ? "currentColor" : "none"}
+                    />
+                  </button>
+                  <button
+                    onClick={() => toggleBookmark(recipe.idMeal || recipe.idDrink || recipe.id || idx)}
+                    className={`p-2 rounded-full transition-colors duration-200 focus:outline-none ${
+                      bookmarked[recipe.idMeal || recipe.idDrink || recipe.id || idx]
+                        ? "bg-red-500 text-white hover:cursor-pointer"
+                        : "bg-white text-red-500 hover:bg-gray-50 hover:cursor-pointer hover:bg-red-500 hover:text-white"
+                    }`}
+                  >
+                    <Bookmark
+                      size={22}
+                      fill={bookmarked[recipe.idMeal || recipe.idDrink || recipe.id || idx] ? "currentColor" : "none"}
+                    />
+                  </button>
+                </div>
+              </div>
+              {/* Content */}
+              <div className="p-5">
+                {/* Category */}
+                <div className="mb-2">
+                  <span className="text-md font-bold text-red-500 tracking-wide">
+                    {recipe.strCategory || recipe.strDrink || recipe.category}
                   </span>
                 </div>
-              </div>
-              <div className="absolute top-3 right-3 flex flex-col space-y-2">
-                <button
-                  onClick={() => toggleLike(recipe.id)}
-                  className={`p-2 rounded-full transition-colors duration-200 focus:outline-none ${
-                    recipe.liked
-                      ? "bg-red-500 text-white hover:cursor-pointer"
-                      : "bg-white text-red-500 hover:bg-gray-50 hover:cursor-pointer hover:bg-red-500 hover:text-white"
-                  }`}
+                {/* Title */}
+                <h3
+                  className="text-xl font-bold text-black mb-3 leading-tight tracking-tight hover:text-red-500 hover:cursor-pointer"
+                  onClick={() => handleOpenRecipeModal(recipe)}
                 >
-                  <Heart
-                    size={22}
-                    fill={recipe.liked ? "currentColor" : "none"}
-                  />
-                </button>
-                <button
-                  onClick={() => toggleBookmark(recipe.id)}
-                  className={`p-2 rounded-full transition-colors duration-200 focus:outline-none ${
-                    recipe.bookmarked
-                      ? "bg-red-500 text-white hover:cursor-pointer"
-                      : "bg-white text-red-500 hover:bg-gray-50 hover:cursor-pointer hover:bg-red-500 hover:text-white"
-                  }`}
-                >
-                  <Bookmark
-                    size={22}
-                    fill={recipe.bookmarked ? "currentColor" : "none"}
-                  />
-                </button>
+                  {recipe.strMeal || recipe.strDrink || recipe.title}
+                </h3>
+                {/* Meta Information */}
+                <div className="flex items-center justify-between text-xs text-gray-400">
+                  <div className="flex items-center justify-center text-sm space-x-1 hover:text-red-500 hover:cursor-pointer">
+                    <Clock size={16} />
+                    <span>{recipe.time || randomTime()}</span>
+                  </div>
+                  <div className="flex items-center justify-center text-sm space-x-1 hover:text-red-500 hover:cursor-pointer">
+                    <span>{recipe.strArea || recipe.cuisine || ""}</span>
+                  </div>
+                  <div className="flex items-center justify-center text-sm space-x-1 hover:text-red-500 hover:cursor-pointer">
+                    <User size={16} />
+                    <span>{recipe.difficulty || randomDifficulty()}</span>
+                  </div>
+                </div>
               </div>
             </div>
-            {/* Content */}
-            <div className="p-5">
-              {/* Category */}
-              <div className="mb-2">
-                <span className="text-md font-bold text-red-500 tracking-wide">
-                  {recipe.category}
-                </span>
-              </div>
-              {/* Title */}
-              <h3 className="text-xl font-bold text-black mb-3 leading-tight tracking-tight hover:text-red-500 hover:cursor-pointer">
-                {recipe.title}
-              </h3>
-              {/* Meta Information */}
-              <div className="flex items-center justify-between text-xs text-gray-400">
-                <div className="flex items-center justify-center text-sm space-x-1 hover:text-red-500 hover:cursor-pointer">
-                  <Clock size={16} />
-                  <span>{recipe.time}</span>
+          ))}
+        </div>
+      )}
+      {/* Recipe Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
+            <button className="absolute top-4 right-4 text-gray-500 hover:text-red-500" onClick={handleCloseRecipeModal}>×</button>
+            <div className="p-6">
+              <h2 className="text-2xl font-bold mb-4 text-center">Recipe Details</h2>
+              {modalLoading ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <span className="text-3xl animate-spin">🍴</span>
+                  <div className="text-gray-600">Loading recipe...</div>
                 </div>
-                <div className="flex items-center justify-center text-sm space-x-1 hover:text-red-500 hover:cursor-pointer">
-                  <span>{recipe.flag}</span>
-                  <span>{recipe.cuisine}</span>
-                </div>
-                <div className="flex items-center justify-center text-sm space-x-1 hover:text-red-500 hover:cursor-pointer">
-                  <User size={16} />
-                  <span>{recipe.difficulty}</span>
-                </div>
-              </div>
+              ) : modalRecipe ? (
+                <>
+                  <img src={modalRecipe.strMealThumb || modalRecipe.strDrinkThumb} alt={modalRecipe.strMeal || modalRecipe.strDrink} className="w-full h-64 object-cover rounded mb-4" />
+                  <h3 className="text-xl font-bold mb-2">{modalRecipe.strMeal || modalRecipe.strDrink}</h3>
+                  <div className="mb-4">
+                    <span className="font-semibold">Category:</span> {modalRecipe.strCategory || modalRecipe.strDrink} <span className="ml-4 font-semibold">Area:</span> {modalRecipe.strArea || ""}
+                  </div>
+                  {/* Ingredients for meals */}
+                  {modalRecipe.strMeal && (
+                    <div className="mb-4">
+                      <span className="font-semibold">Ingredients:</span>
+                      <ul className="list-disc list-inside ml-4">
+                        {getIngredientsList(modalRecipe).map((ing, idx) => (
+                          <li key={idx}>{ing}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {/* Ingredients for drinks */}
+                  {modalRecipe.strDrink && (
+                    <div className="mb-4">
+                      <span className="font-semibold">Ingredients:</span>
+                      <ul className="list-disc list-inside ml-4">
+                        {Array.from({ length: 15 }, (_, i) => i + 1)
+                          .map(i => {
+                            const ing = modalRecipe[`strIngredient${i}`];
+                            const measure = modalRecipe[`strMeasure${i}`];
+                            return ing && ing.trim() ? `${measure ? measure.trim() + ' ' : ''}${ing.trim()}` : null;
+                          })
+                          .filter(Boolean)
+                          .map((ing, idx) => <li key={idx}>{ing}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  <div className="mb-4">
+                    <span className="font-semibold">Instructions:</span>
+                    <p className="whitespace-pre-line mt-1">{modalRecipe.strInstructions}</p>
+                  </div>
+                  {/* YouTube for meals */}
+                  {modalRecipe.strYoutube && (
+                    <div className="mb-2">
+                      <a href={modalRecipe.strYoutube} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Watch on YouTube</a>
+                    </div>
+                  )}
+                  {/* Video for drinks */}
+                  {modalRecipe.strVideo && (
+                    <div className="mb-2">
+                      <a href={modalRecipe.strVideo} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Watch Video</a>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="p-8 text-center text-gray-500">No recipe details found.</div>
+              )}
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

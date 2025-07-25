@@ -110,6 +110,13 @@ const videos = [
 
 export default function Vedios({id}) {
   const [videosState, setVideosState] = useState(videos);
+  const [exploreModalOpen, setExploreModalOpen] = useState(false);
+  const [exploreRecipes, setExploreRecipes] = useState([]);
+  const [exploreLoading, setExploreLoading] = useState(false);
+  const [exploreError, setExploreError] = useState("");
+  const [dishModalOpen, setDishModalOpen] = useState(false);
+  const [dishRecipe, setDishRecipe] = useState(null);
+  const [dishLoading, setDishLoading] = useState(false);
 
   const toggleLike = (id) => {
     setVideosState(prev =>
@@ -127,12 +134,62 @@ export default function Vedios({id}) {
     );
   };
 
+  const handleOpenExploreModal = async () => {
+    setExploreModalOpen(true);
+    setExploreLoading(true);
+    setExploreError("");
+    try {
+      const res = await fetch("https://www.themealdb.com/api/json/v1/1/search.php?s=");
+      const data = await res.json();
+      if (data.meals && data.meals.length > 0) {
+        setExploreRecipes(data.meals.slice(0, 16));
+      } else {
+        setExploreError("No recipes found.");
+      }
+    } catch {
+      setExploreError("Failed to fetch recipes.");
+    }
+    setExploreLoading(false);
+  };
+
+  const handleCloseExploreModal = () => {
+    setExploreModalOpen(false);
+    setExploreRecipes([]);
+    setExploreError("");
+  };
+
+  const handleOpenDishModal = async (recipe) => {
+    setDishModalOpen(true);
+    setDishRecipe(null);
+    setDishLoading(true);
+    try {
+      const res = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${recipe.idMeal}`);
+      const data = await res.json();
+      if (data.meals && data.meals.length > 0) {
+        setDishRecipe(data.meals[0]);
+      } else {
+        setDishRecipe(null);
+      }
+    } catch {
+      setDishRecipe(null);
+    }
+    setDishLoading(false);
+  };
+
+  const handleCloseDishModal = () => {
+    setDishModalOpen(false);
+    setDishRecipe(null);
+  };
+
   return (
     <div id={id} className="max-w-[90%] mx-auto px-4 py-12">
       {/* Explore All Recipes Button */}
       <div className="flex items-center justify-center mb-18">
   <div className="flex-grow h-px bg-gray-200"></div>
-  <button className="mx-4 px-6 py-2 bg-white border border-gray-200 rounded-md font-semibold hover:text-white hover:bg-red-500">
+  <button
+    className="mx-4 px-6 py-2 bg-white border border-gray-200 rounded-md font-semibold hover:text-white hover:bg-red-500"
+    onClick={handleOpenExploreModal}
+  >
     Explore All Recipes
   </button>
   <div className="flex-grow h-px bg-gray-200"></div>
@@ -222,6 +279,91 @@ export default function Vedios({id}) {
           </div>
         ))}
       </div>
+      {/* Explore Modal */}
+      {exploreModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
+            <button className="absolute top-4 right-4 text-gray-500 hover:text-red-500" onClick={handleCloseExploreModal}>×</button>
+            <div className="p-6">
+              <h2 className="text-2xl font-bold mb-4 text-center">Explore Recipes</h2>
+              {exploreLoading ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <span className="text-3xl animate-spin">🍴</span>
+                  <div className="text-gray-600">Loading recipes...</div>
+                </div>
+              ) : exploreError ? (
+                <div className="p-8 text-center text-gray-500">{exploreError}</div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {exploreRecipes.map((recipe) => (
+                    <div
+                      key={recipe.idMeal}
+                      className="bg-white rounded-xl overflow-hidden shadow hover:shadow-lg transition cursor-pointer"
+                      onClick={() => handleOpenDishModal(recipe)}
+                    >
+                      <img src={recipe.strMealThumb} alt={recipe.strMeal} className="w-full h-48 object-cover" />
+                      <div className="p-4">
+                        <div className="text-md font-bold text-red-500 mb-1">{recipe.strCategory}</div>
+                        <div className="text-lg font-semibold text-black mb-2 hover:text-red-500">{recipe.strMeal}</div>
+                        <div className="text-xs text-gray-400">{recipe.strArea}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Dish Modal */}
+      {dishModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
+            <button className="absolute top-4 right-4 text-gray-500 hover:text-red-500" onClick={handleCloseDishModal}>×</button>
+            <div className="p-6">
+              <h2 className="text-2xl font-bold mb-4 text-center">Recipe Details</h2>
+              {dishLoading ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <span className="text-3xl animate-spin">🍴</span>
+                  <div className="text-gray-600">Loading recipe...</div>
+                </div>
+              ) : dishRecipe ? (
+                <>
+                  <img src={dishRecipe.strMealThumb} alt={dishRecipe.strMeal} className="w-full h-64 object-cover rounded mb-4" />
+                  <h3 className="text-xl font-bold mb-2">{dishRecipe.strMeal}</h3>
+                  <div className="mb-4">
+                    <span className="font-semibold">Category:</span> {dishRecipe.strCategory} <span className="ml-4 font-semibold">Area:</span> {dishRecipe.strArea}
+                  </div>
+                  <div className="mb-4">
+                    <span className="font-semibold">Ingredients:</span>
+                    <ul className="list-disc list-inside ml-4">
+                      {Array.from({ length: 20 }, (_, i) => i + 1)
+                        .map(i => {
+                          const ing = dishRecipe[`strIngredient${i}`];
+                          const measure = dishRecipe[`strMeasure${i}`];
+                          return ing && ing.trim() ? `${measure ? measure.trim() + ' ' : ''}${ing.trim()}` : null;
+                        })
+                        .filter(Boolean)
+                        .map((ing, idx) => <li key={idx}>{ing}</li>)}
+                    </ul>
+                  </div>
+                  <div className="mb-4">
+                    <span className="font-semibold">Instructions:</span>
+                    <p className="whitespace-pre-line mt-1">{dishRecipe.strInstructions}</p>
+                  </div>
+                  {dishRecipe.strYoutube && (
+                    <div className="mb-2">
+                      <a href={dishRecipe.strYoutube} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Watch on YouTube</a>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="p-8 text-center text-gray-500">No recipe details found.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
