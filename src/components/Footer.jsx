@@ -164,7 +164,7 @@ export default function Footer({ onShowAZModal, onShowContactModal, scrollToSect
                 className="bg-white text-xs sm:text-sm lg:text-sm tracking-tighter text-black font-bold rounded-full px-3 sm:px-4 lg:px-4 py-2 lg:py-[10px] mb-2 inline-block whitespace-nowrap hover:bg-red-500 hover:text-white focus:outline-none"
                 onClick={() => handleTagClick(tag)}
               >
-                {tag}
+              {tag}
               </button>
             );
           })}
@@ -261,9 +261,9 @@ export default function Footer({ onShowAZModal, onShowContactModal, scrollToSect
                   );
                 }
                 return (
-                  <a key={link} href="#" className="hover:text-red-500 whitespace-nowrap">
-                    {link}
-                  </a>
+                <a key={link} href="#" className="hover:text-red-500 whitespace-nowrap">
+                  {link}
+                </a>
                 );
               })}
             </div>

@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import API from '../api';
+import { useRecipeContext } from '../hooks/useRecipeContext';
 
 const Login = ({ isOpen, onClose }) => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -9,6 +12,11 @@ const Login = ({ isOpen, onClose }) => {
     password: '',
     rememberMe: false
   });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [serverError, setServerError] = useState(false);
+  const navigate = useNavigate();
+  const { loadUserPreferences } = useRecipeContext();
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -18,10 +26,97 @@ const Login = ({ isOpen, onClose }) => {
     }));
   };
 
-  const handleSubmit = () => {
-    console.log('Form submitted:', formData);
-    // Handle form submission logic here
-    onClose(); // Close modal after submission
+  const testServerConnection = async () => {
+    try {
+      const response = await fetch('http://localhost:5000');
+      return response.ok;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!formData.email || !formData.password) {
+      setMessage('Please fill in all required fields');
+      return;
+    }
+
+    setLoading(true);
+    setMessage('');
+    setServerError(false);
+    
+    // Test server connection first
+    const serverConnected = await testServerConnection();
+    if (!serverConnected) {
+      setLoading(false);
+      setServerError(true);
+      setMessage('Cannot connect to server. Please ensure the backend is running on port 5000.');
+      return;
+    }
+
+    // Add timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      setMessage('Request timed out. Please check your connection and try again.');
+    }, 10000); // 10 second timeout
+
+    try {
+      console.log('Attempting to', isSignUp ? 'register' : 'login', 'with:', { email: formData.email });
+      
+      if (isSignUp) {
+        // Registration logic
+        console.log('Making registration API call...');
+        const res = await API.post('/auth/register', {
+          name: formData.username,
+          email: formData.email,
+          password: formData.password
+        });
+        console.log('Registration response:', res.data);
+        
+        localStorage.setItem('token', res.data.token);
+        await loadUserPreferences();
+        setMessage('Registration successful! Redirecting to home...');
+        clearTimeout(timeoutId);
+        setTimeout(() => {
+          setLoading(false);
+          onClose();
+          navigate('/');
+        }, 1500);
+      } else {
+        // Login logic
+        console.log('Making login API call...');
+        const res = await API.post('/auth/login', {
+          email: formData.email,
+          password: formData.password
+        });
+        console.log('Login response:', res.data);
+        
+        localStorage.setItem('token', res.data.token);
+        await loadUserPreferences();
+        setMessage('Login successful! Redirecting to home...');
+        clearTimeout(timeoutId);
+        setTimeout(() => {
+          setLoading(false);
+          onClose();
+          navigate('/');
+        }, 1500);
+      }
+    } catch (err) {
+      console.error('Auth error:', err);
+      clearTimeout(timeoutId);
+      
+      if (err.code === 'ECONNREFUSED' || err.message.includes('Network Error')) {
+        setMessage('Cannot connect to server. Please ensure the backend is running.');
+        setServerError(true);
+      } else if (err.response?.status === 400) {
+        setMessage(err.response.data.message || 'Invalid credentials');
+      } else if (err.response?.status === 500) {
+        setMessage('Server error. Please try again later.');
+      } else {
+        setMessage(err.response?.data?.message || (isSignUp ? 'Registration failed' : 'Login failed'));
+      }
+      setLoading(false);
+    }
   };
 
   const switchMode = () => {
@@ -32,6 +127,8 @@ const Login = ({ isOpen, onClose }) => {
       password: '',
       rememberMe: false
     });
+    setMessage('');
+    setServerError(false);
   };
 
   if (!isOpen) return null;
@@ -134,10 +231,28 @@ const Login = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-4 rounded-lg transition-colors duration-200"
+                className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-4 rounded-lg transition-colors duration-200 disabled:opacity-50"
+                disabled={loading}
               >
-                {isSignUp ? 'Sign Up' : 'Sign in'}
+                {loading ? (isSignUp ? 'Registering...' : 'Signing in...') : (isSignUp ? 'Sign Up' : 'Sign in')}
               </button>
+
+              {message && (
+                <div className={`text-sm text-center p-2 rounded ${message.includes('successful') ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>
+                  {message}
+                  {serverError && (
+                    <div className="mt-2">
+                      <p className="text-xs text-gray-600 mb-2">To fix this:</p>
+                      <ol className="text-xs text-gray-600 text-left list-decimal list-inside space-y-1">
+                        <li>Open a terminal in the server folder</li>
+                        <li>Run: npm install</li>
+                        <li>Run: npm start</li>
+                        <li>Ensure MongoDB is running</li>
+                      </ol>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="text-center space-x-4">
                 {!isSignUp && (

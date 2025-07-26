@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Heart, Bookmark, Clock, User, PlayCircle, Play } from 'lucide-react';
+import { useRecipeContext } from '../hooks/useRecipeContext';
 
 const videos = [
   {
@@ -43,14 +44,14 @@ const videos = [
   },
   {
     id: 4,
-    category: 'Vegan',
-    title: 'Vegan Black Bean Tacos with Avocado Salsa',
-    image: '/images/recipe-19-630x785.jpg',
-    rating: 4.6,
-    time: '15 min',
-    difficulty: 'Advanced',
-    cuisine: 'Greek',
-    flag: '🇬🇷',
+    category: 'Pasta',
+    title: 'Creamy Garlic Mushroom Penne Pasta',
+    image: '/images/recipe-2-550x690.jpg',
+    rating: 4.8,
+    time: '35 min',
+    difficulty: 'Intermediate',
+    cuisine: 'Italian',
+    flag: '🇮🇹',
     liked: false,
     bookmarked: false,
   },
@@ -108,8 +109,10 @@ const videos = [
   },
 ];
 
+const SPOONACULAR_API_KEY = '8630821ba3104e178cdb79d48392e75e';
+
 export default function Vedios({id}) {
-  const [videosState, setVideosState] = useState(videos);
+  const [videosState] = useState(videos);
   const [exploreModalOpen, setExploreModalOpen] = useState(false);
   const [exploreRecipes, setExploreRecipes] = useState([]);
   const [exploreLoading, setExploreLoading] = useState(false);
@@ -117,22 +120,14 @@ export default function Vedios({id}) {
   const [dishModalOpen, setDishModalOpen] = useState(false);
   const [dishRecipe, setDishRecipe] = useState(null);
   const [dishLoading, setDishLoading] = useState(false);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const [videoModalLoading, setVideoModalLoading] = useState(false);
+  const [videoModalError, setVideoModalError] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
+  const [videoModalTitle, setVideoModalTitle] = useState('');
 
-  const toggleLike = (id) => {
-    setVideosState(prev =>
-      prev.map(video =>
-        video.id === id ? { ...video, liked: !video.liked } : video
-      )
-    );
-  };
-
-  const toggleBookmark = (id) => {
-    setVideosState(prev =>
-      prev.map(video =>
-        video.id === id ? { ...video, bookmarked: !video.bookmarked } : video
-      )
-    );
-  };
+  // Use shared context for likes and bookmarks
+  const { toggleLike, toggleBookmark, isLiked, isBookmarked } = useRecipeContext();
 
   const handleOpenExploreModal = async () => {
     setExploreModalOpen(true);
@@ -181,6 +176,71 @@ export default function Vedios({id}) {
     setDishRecipe(null);
   };
 
+  const handleOpenVideoModal = async (title) => {
+    setVideoModalOpen(true);
+    setVideoModalLoading(true);
+    setVideoModalError('');
+    setVideoUrl('');
+    setVideoModalTitle(title);
+    // Special cases for hardcoded YouTube videos
+    if (title === 'Creamy Garlic Mushroom Penne Pasta') {
+      setVideoUrl('https://www.youtube.com/embed/H-HpXt4Y5SQ');
+      setVideoModalLoading(false);
+      return;
+    }
+    if (title === 'Spinach Ricotta Stuffed Vegan Pasta Shells') {
+      setVideoUrl('https://www.youtube.com/embed/JKZ0QDJM5Sg');
+      setVideoModalLoading(false);
+      return;
+    }
+    if (title === 'Asian Sesame Noodles with Crunchy Veggies') {
+      setVideoUrl('https://www.youtube.com/embed/i9VD-O2y2mw');
+      setVideoModalLoading(false);
+      return;
+    }
+    if (title === 'Savory Garlic Herb Butter Dinner Rolls') {
+      setVideoUrl('https://www.youtube.com/embed/Zd1c7WLFIGo');
+      setVideoModalLoading(false);
+      return;
+    }
+    if (title === 'Chickpea and Kale Salad with Lemon Dressing') {
+      setVideoUrl('https://www.youtube.com/embed/T9o4Frt_doQ');
+      setVideoModalLoading(false);
+      return;
+    }
+    // Try full title, then first 3 words, then first word
+    const queries = [
+      title,
+      title.split(' ').slice(0, 3).join(' '),
+      title.split(' ')[0]
+    ];
+    let found = false;
+    for (let q of queries) {
+      try {
+        const res = await fetch(`https://api.spoonacular.com/food/videos/search?query=${encodeURIComponent(q)}&apiKey=${SPOONACULAR_API_KEY}`);
+        const data = await res.json();
+        if (data.videos && data.videos.length > 0) {
+          setVideoUrl(data.videos[0].youTubeId ? `https://www.youtube.com/embed/${data.videos[0].youTubeId}` : data.videos[0].url);
+          found = true;
+          break;
+        }
+      } catch {
+        // Ignore and try next query
+      }
+    }
+    if (!found) {
+      setVideoModalError('No video found for this recipe.');
+    }
+    setVideoModalLoading(false);
+  };
+
+  const handleCloseVideoModal = () => {
+    setVideoModalOpen(false);
+    setVideoUrl('');
+    setVideoModalError('');
+    setVideoModalTitle('');
+  };
+
   return (
     <div id={id} className="max-w-[90%] mx-auto px-4 py-12">
       {/* Explore All Recipes Button */}
@@ -208,7 +268,7 @@ export default function Vedios({id}) {
         {videosState.map((video) => (
           <div key={video.id} className="bg-white rounded-xl overflow-hidden duration-200">
             {/* Image Container */}
-            <div className="relative group cursor-pointer">
+            <div className="relative group cursor-pointer" onClick={() => handleOpenVideoModal(video.title)}>
               <img
                 src={video.image}
                 alt={video.title}
@@ -229,24 +289,24 @@ export default function Vedios({id}) {
               </div>
               <div className="absolute top-3 right-3 flex flex-col space-y-2">
                 <button
-                  onClick={() => toggleLike(video.id)}
+                  onClick={() => toggleLike(`external_${video.id}`)}
                   className={`p-2 rounded-full transition-colors duration-200 focus:outline-none ${
-                    video.liked
+                    isLiked(`external_${video.id}`)
                       ? 'bg-red-500 text-white hover:cursor-pointer'
                       : 'bg-white text-red-500 hover:bg-gray-50 hover:cursor-pointer hover:bg-red-500 hover:text-white'
                   }`}
                 >
-                  <Heart size={22} fill={video.liked ? 'currentColor' : 'none'} />
+                  <Heart size={22} fill={isLiked(`external_${video.id}`) ? 'currentColor' : 'none'} />
                 </button>
                 <button
-                  onClick={() => toggleBookmark(video.id)}
+                  onClick={() => toggleBookmark(`external_${video.id}`)}
                   className={`p-2 rounded-full transition-colors duration-200 focus:outline-none ${
-                    video.bookmarked
+                    isBookmarked(`external_${video.id}`)
                       ? 'bg-red-500 text-white hover:cursor-pointer'
                       : 'bg-white text-red-500 hover:bg-gray-50 hover:cursor-pointer hover:bg-red-500 hover:text-white'
                   }`}
                 >
-                  <Bookmark size={22} fill={video.bookmarked ? 'currentColor' : 'none'} />
+                  <Bookmark size={22} fill={isBookmarked(`external_${video.id}`) ? 'currentColor' : 'none'} />
                 </button>
               </div>
             </div>
@@ -361,6 +421,33 @@ export default function Vedios({id}) {
                 <div className="p-8 text-center text-gray-500">No recipe details found.</div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+      {/* Video Modal */}
+      {videoModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative p-6">
+            <button className="absolute top-4 right-4 text-gray-500 hover:text-red-500" onClick={handleCloseVideoModal}>✕</button>
+            <h2 className="text-2xl font-bold mb-4 text-center">{videoModalTitle}</h2>
+            {videoModalLoading ? (
+              <div className="text-center py-8">Loading video...</div>
+            ) : videoModalError ? (
+              <div className="text-center text-red-500 py-8">{videoModalError}</div>
+            ) : videoUrl ? (
+              <div className="flex flex-col items-center">
+                <iframe
+                  width="100%"
+                  height="400"
+                  src={videoUrl}
+                  title={videoModalTitle}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="rounded-lg mb-4"
+                ></iframe>
+              </div>
+            ) : null}
           </div>
         </div>
       )}

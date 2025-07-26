@@ -172,23 +172,23 @@ export default function OurJournal() {
           }
           return (
             <div key={article.id} className="bg-white overflow-hidden">
-              {/* Article Image */}
-              <div className="relative h-64 overflow-hidden">
-                <img 
-                  src={article.image} 
-                  alt={article.title}
+            {/* Article Image */}
+            <div className="relative h-64 overflow-hidden">
+              <img 
+                src={article.image} 
+                alt={article.title}
                   className="w-full h-full object-cover rounded-lg hover:cursor-pointer"
-                />
-                {/* Category Badge */}
+              />
+              {/* Category Badge */}
                 <div className="absolute top-4 left-4 hover:cursor-pointer">
                   <span className={`${article.categoryColor} text-white text-xs font-bold px-3 py-2 rounded-md`}>
-                    {article.category}
-                  </span>
-                </div>
+                  {article.category}
+                </span>
               </div>
+            </div>
 
-              {/* Article Content */}
-              <div className="p-6 pb-4">
+            {/* Article Content */}
+            <div className="p-6 pb-4">
               <h3
                 className="text-xl tracking-tighter font-bold mb-4 leading-snug text-black hover:text-red-500 hover:cursor-pointer"
                 onClick={onClick}
@@ -200,14 +200,14 @@ export default function OurJournal() {
                 <span>by <span className="font-bold text-black hover:text-red-500 hover:cursor-pointer">{article.author}</span></span>
                 {/* <span className="mx-1">•</span> */}
                 <div className='flex items-center justify-between sm:justify-start sm:gap-x-4'>
-                  <div className='flex items-center text-sm text-semibold gap-x-1 text-gray-500 tracking-tighter'>
-                  <Clock className="w-4 h-4" />
-                  <span>{article.date}</span>
-                  </div>
-                  {/* <span className="mx-1">•</span> */}
-                  <div className='flex items-center text-xs text-gray-500 tracking-tighter'>
-                  <MessageCircle className="inline w-4 h-4 mr-1" />
-                  <span>{article.comments}</span>
+                <div className='flex items-center text-sm text-semibold gap-x-1 text-gray-500 tracking-tighter'>
+                <Clock className="w-4 h-4" />
+                <span>{article.date}</span>
+                </div>
+                {/* <span className="mx-1">•</span> */}
+                <div className='flex items-center text-xs text-gray-500 tracking-tighter'>
+                <MessageCircle className="inline w-4 h-4 mr-1" />
+                <span>{article.comments}</span>
                   </div>
                 </div>
               </div>

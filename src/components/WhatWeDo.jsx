@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Heart, Bookmark, Clock, User, ChefHat, X } from "lucide-react";
+import { useRecipeContext } from "../hooks/useRecipeContext";
 
 const tabApiMap = {
   "Latest Recipes": async () => {
@@ -62,11 +63,8 @@ const WhatWeDo = () => {
     return () => { ignore = true; };
   }, [activeTab]);
 
-  // Like/bookmark logic for demo (local only)
-  const [liked, setLiked] = useState({});
-  const [bookmarked, setBookmarked] = useState({});
-  const toggleLike = (id) => setLiked((prev) => ({ ...prev, [id]: !prev[id] }));
-  const toggleBookmark = (id) => setBookmarked((prev) => ({ ...prev, [id]: !prev[id] }));
+  // Use shared context for likes and bookmarks
+  const { toggleLike, toggleBookmark, isLiked, isBookmarked } = useRecipeContext();
 
   // Fetch full recipe details by idMeal
   const handleOpenRecipeModal = async (recipe) => {
@@ -151,29 +149,29 @@ const WhatWeDo = () => {
                 </div>
                 <div className="absolute top-3 right-3 flex flex-col space-y-2">
                   <button
-                    onClick={() => toggleLike(recipe.idMeal || recipe.id)}
+                    onClick={() => toggleLike(`external_${recipe.idMeal || recipe.id}`)}
                     className={`p-2 rounded-full transition-colors duration-200 focus:outline-none ${
-                      liked[recipe.idMeal || recipe.id]
+                      isLiked(`external_${recipe.idMeal || recipe.id}`)
                         ? "bg-red-500 text-white hover:cursor-pointer"
                         : "bg-white text-red-500 hover:bg-gray-50 hover:cursor-pointer hover:bg-red-500 hover:text-white"
                     }`}
                   >
                     <Heart
                       size={22}
-                      fill={liked[recipe.idMeal || recipe.id] ? "currentColor" : "none"}
+                      fill={isLiked(`external_${recipe.idMeal || recipe.id}`) ? "currentColor" : "none"}
                     />
                   </button>
                   <button
-                    onClick={() => toggleBookmark(recipe.idMeal || recipe.id)}
+                    onClick={() => toggleBookmark(`external_${recipe.idMeal || recipe.id}`)}
                     className={`p-2 rounded-full transition-colors duration-200 focus:outline-none ${
-                      bookmarked[recipe.idMeal || recipe.id]
+                      isBookmarked(`external_${recipe.idMeal || recipe.id}`)
                         ? "bg-red-500 text-white hover:cursor-pointer"
                         : "bg-white text-red-500 hover:bg-gray-50 hover:cursor-pointer hover:bg-red-500 hover:text-white"
                     }`}
                   >
                     <Bookmark
                       size={22}
-                      fill={bookmarked[recipe.idMeal || recipe.id] ? "currentColor" : "none"}
+                      fill={isBookmarked(`external_${recipe.idMeal || recipe.id}`) ? "currentColor" : "none"}
                     />
                   </button>
                 </div>

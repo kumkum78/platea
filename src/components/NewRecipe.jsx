@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Heart, Bookmark, Clock, User } from "lucide-react";
+import { useRecipeContext } from "../hooks/useRecipeContext";
 
 const categories = [
   "All Recipes",
@@ -144,8 +145,7 @@ const NewRecipe = () => {
   const [activeCategory, setActiveCategory] = useState("All Recipes");
   const [recipesState, setRecipesState] = useState(fallbackRecipes);
   const [loading, setLoading] = useState(false);
-  const [liked, setLiked] = useState({});
-  const [bookmarked, setBookmarked] = useState({});
+  // Removed local state - using context instead
   const [modalOpen, setModalOpen] = useState(false);
   const [modalRecipe, setModalRecipe] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
@@ -212,8 +212,8 @@ const NewRecipe = () => {
     return () => { ignore = true; };
   }, [activeCategory]);
 
-  const toggleLike = (id) => setLiked((prev) => ({ ...prev, [id]: !prev[id] }));
-  const toggleBookmark = (id) => setBookmarked((prev) => ({ ...prev, [id]: !prev[id] }));
+  // Use shared context for likes and bookmarks
+  const { toggleLike, toggleBookmark, isLiked, isBookmarked } = useRecipeContext();
 
   const handleOpenRecipeModal = async (recipe) => {
     setModalOpen(true);
@@ -290,83 +290,83 @@ const NewRecipe = () => {
           <span className="text-3xl animate-spin">🍴</span>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {recipesState.map((recipe, idx) => (
-            <div
+          <div
               key={recipe.idMeal || recipe.idDrink || recipe.id || idx}
-              className="bg-white rounded-xl overflow-hidden"
-            >
-              {/* Image Container */}
-              <div className="relative group cursor-pointer">
-                <img
+            className="bg-white rounded-xl overflow-hidden"
+          >
+            {/* Image Container */}
+            <div className="relative group cursor-pointer">
+              <img
                   src={recipe.strMealThumb || recipe.strDrinkThumb || recipe.image}
                   alt={recipe.strMeal || recipe.strDrink || recipe.title}
-                  className="w-full h-94 object-cover"
-                />
-                {/* Top Overlay Icons */}
-                <div className="absolute top-3 left-3">
-                  <div className="bg-white bg-opacity-90 rounded-full px-2 py-1 flex items-center space-x-1">
-                    <span className="text-yellow-400 text-sm">★</span>
-                    <span className="text-xs font-medium text-gray-800">
+                className="w-full h-94 object-cover"
+              />
+              {/* Top Overlay Icons */}
+              <div className="absolute top-3 left-3">
+                <div className="bg-white bg-opacity-90 rounded-full px-2 py-1 flex items-center space-x-1">
+                  <span className="text-yellow-400 text-sm">★</span>
+                  <span className="text-xs font-medium text-gray-800">
                       {recipe.rating || "4.8"}
-                    </span>
-                  </div>
-                </div>
-                <div className="absolute top-3 right-3 flex flex-col space-y-2">
-                  <button
-                    onClick={() => toggleLike(recipe.idMeal || recipe.idDrink || recipe.id || idx)}
-                    className={`p-2 rounded-full transition-colors duration-200 focus:outline-none ${
-                      liked[recipe.idMeal || recipe.idDrink || recipe.id || idx]
-                        ? "bg-red-500 text-white hover:cursor-pointer"
-                        : "bg-white text-red-500 hover:bg-gray-50 hover:cursor-pointer hover:bg-red-500 hover:text-white"
-                    }`}
-                  >
-                    <Heart
-                      size={22}
-                      fill={liked[recipe.idMeal || recipe.idDrink || recipe.id || idx] ? "currentColor" : "none"}
-                    />
-                  </button>
-                  <button
-                    onClick={() => toggleBookmark(recipe.idMeal || recipe.idDrink || recipe.id || idx)}
-                    className={`p-2 rounded-full transition-colors duration-200 focus:outline-none ${
-                      bookmarked[recipe.idMeal || recipe.idDrink || recipe.id || idx]
-                        ? "bg-red-500 text-white hover:cursor-pointer"
-                        : "bg-white text-red-500 hover:bg-gray-50 hover:cursor-pointer hover:bg-red-500 hover:text-white"
-                    }`}
-                  >
-                    <Bookmark
-                      size={22}
-                      fill={bookmarked[recipe.idMeal || recipe.idDrink || recipe.id || idx] ? "currentColor" : "none"}
-                    />
-                  </button>
-                </div>
-              </div>
-              {/* Content */}
-              <div className="p-5">
-                {/* Category */}
-                <div className="mb-2">
-                  <span className="text-md font-bold text-red-500 tracking-wide">
-                    {recipe.strCategory || recipe.strDrink || recipe.category}
                   </span>
                 </div>
-                {/* Title */}
+              </div>
+              <div className="absolute top-3 right-3 flex flex-col space-y-2">
+                <button
+                    onClick={() => toggleLike(`external_${recipe.idMeal || recipe.idDrink || recipe.id || idx}`)}
+                  className={`p-2 rounded-full transition-colors duration-200 focus:outline-none ${
+                      isLiked(`external_${recipe.idMeal || recipe.idDrink || recipe.id || idx}`)
+                      ? "bg-red-500 text-white hover:cursor-pointer"
+                      : "bg-white text-red-500 hover:bg-gray-50 hover:cursor-pointer hover:bg-red-500 hover:text-white"
+                  }`}
+                >
+                  <Heart
+                    size={22}
+                      fill={isLiked(`external_${recipe.idMeal || recipe.idDrink || recipe.id || idx}`) ? "currentColor" : "none"}
+                  />
+                </button>
+                <button
+                    onClick={() => toggleBookmark(`external_${recipe.idMeal || recipe.idDrink || recipe.id || idx}`)}
+                  className={`p-2 rounded-full transition-colors duration-200 focus:outline-none ${
+                      isBookmarked(`external_${recipe.idMeal || recipe.idDrink || recipe.id || idx}`)
+                      ? "bg-red-500 text-white hover:cursor-pointer"
+                      : "bg-white text-red-500 hover:bg-gray-50 hover:cursor-pointer hover:bg-red-500 hover:text-white"
+                  }`}
+                >
+                  <Bookmark
+                    size={22}
+                      fill={isBookmarked(`external_${recipe.idMeal || recipe.idDrink || recipe.id || idx}`) ? "currentColor" : "none"}
+                  />
+                </button>
+              </div>
+            </div>
+            {/* Content */}
+            <div className="p-5">
+              {/* Category */}
+              <div className="mb-2">
+                <span className="text-md font-bold text-red-500 tracking-wide">
+                    {recipe.strCategory || recipe.strDrink || recipe.category}
+                </span>
+              </div>
+              {/* Title */}
                 <h3
                   className="text-xl font-bold text-black mb-3 leading-tight tracking-tight hover:text-red-500 hover:cursor-pointer"
                   onClick={() => handleOpenRecipeModal(recipe)}
                 >
                   {recipe.strMeal || recipe.strDrink || recipe.title}
-                </h3>
-                {/* Meta Information */}
-                <div className="flex items-center justify-between text-xs text-gray-400">
-                  <div className="flex items-center justify-center text-sm space-x-1 hover:text-red-500 hover:cursor-pointer">
-                    <Clock size={16} />
+              </h3>
+              {/* Meta Information */}
+              <div className="flex items-center justify-between text-xs text-gray-400">
+                <div className="flex items-center justify-center text-sm space-x-1 hover:text-red-500 hover:cursor-pointer">
+                  <Clock size={16} />
                     <span>{recipe.time || randomTime()}</span>
-                  </div>
-                  <div className="flex items-center justify-center text-sm space-x-1 hover:text-red-500 hover:cursor-pointer">
+                </div>
+                <div className="flex items-center justify-center text-sm space-x-1 hover:text-red-500 hover:cursor-pointer">
                     <span>{recipe.strArea || recipe.cuisine || ""}</span>
-                  </div>
-                  <div className="flex items-center justify-center text-sm space-x-1 hover:text-red-500 hover:cursor-pointer">
-                    <User size={16} />
+                </div>
+                <div className="flex items-center justify-center text-sm space-x-1 hover:text-red-500 hover:cursor-pointer">
+                  <User size={16} />
                     <span>{recipe.difficulty || randomDifficulty()}</span>
                   </div>
                 </div>
@@ -443,7 +443,7 @@ const NewRecipe = () => {
               )}
             </div>
           </div>
-        </div>
+      </div>
       )}
     </div>
   );

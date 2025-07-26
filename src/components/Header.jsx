@@ -8,12 +8,17 @@ import {
   User,
   Plus,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import Login from "./Login";
 import AZRecipesModal from "./AZRecipesModal";
 import ContactModal from "./ContactModal";
 import SearchModal from "./SearchModal";
 
-const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => {
+const Navbar = ({
+  onShowAZModal,
+  onShowCategoryRecipes,
+  onShowBlogArticle,
+}) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -31,8 +36,9 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
   // Add back image state and handler for file input
   const [recipeImage, setRecipeImage] = useState(null);
   const fileInputRef = React.useRef(null);
-  const handleImageChange = e => setRecipeImage(e.target.files[0]);
-  const handleAddImageClick = () => fileInputRef.current && fileInputRef.current.click();
+  const handleImageChange = (e) => setRecipeImage(e.target.files[0]);
+  const handleAddImageClick = () =>
+    fileInputRef.current && fileInputRef.current.click();
 
   const toggleCategories = () => {
     setIsCategoriesOpen(!isCategoriesOpen);
@@ -62,15 +68,25 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
   const openLogin = () => setIsLoginOpen(true);
   const closeLogin = () => setIsLoginOpen(false);
 
-  const handleOpenAddRecipe = () => setShowAddRecipeModal(true);
+  // Removed unused function
   const handleCloseAddRecipe = () => setShowAddRecipeModal(false);
-  const handleAddIngredient = () => setRecipeIngredients([...recipeIngredients, ""]);
-  const handleIngredientChange = (idx, value) => setRecipeIngredients(recipeIngredients.map((ing, i) => i === idx ? value : ing));
-  const handleRemoveIngredient = idx => setRecipeIngredients(recipeIngredients.filter((_, i) => i !== idx));
+  const handleAddIngredient = () =>
+    setRecipeIngredients([...recipeIngredients, ""]);
+  const handleIngredientChange = (idx, value) =>
+    setRecipeIngredients(
+      recipeIngredients.map((ing, i) => (i === idx ? value : ing))
+    );
+  const handleRemoveIngredient = (idx) =>
+    setRecipeIngredients(recipeIngredients.filter((_, i) => i !== idx));
   const handleAddStep = () => setRecipeSteps([...recipeSteps, ""]);
-  const handleStepChange = (idx, value) => setRecipeSteps(recipeSteps.map((step, i) => i === idx ? value : step));
-  const handleRemoveStep = idx => setRecipeSteps(recipeSteps.filter((_, i) => i !== idx));
-  const handleCreateRecipe = e => { e.preventDefault(); /* handle recipe creation logic here */ handleCloseAddRecipe(); };
+  const handleStepChange = (idx, value) =>
+    setRecipeSteps(recipeSteps.map((step, i) => (i === idx ? value : step)));
+  const handleRemoveStep = (idx) =>
+    setRecipeSteps(recipeSteps.filter((_, i) => i !== idx));
+  const handleCreateRecipe = (e) => {
+    e.preventDefault();
+    /* handle recipe creation logic here */ handleCloseAddRecipe();
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -93,47 +109,47 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
   const handleCategoryClick = (category) => {
     setIsCategoriesOpen(false);
     switch (category) {
-      case 'videos': {
+      case "videos": {
         // Scroll to videos section
-        const videosSection = document.getElementById('videos-section');
+        const videosSection = document.getElementById("videos-section");
         if (videosSection) {
-          videosSection.scrollIntoView({ behavior: 'smooth' });
+          videosSection.scrollIntoView({ behavior: "smooth" });
         }
         break;
       }
-      case 'az-recipes': {
+      case "az-recipes": {
         // Show AZ Recipes Modal
         onShowAZModal();
         break;
       }
-      case 'this-week': {
+      case "this-week": {
         // Scroll to discover section
-        const discoverSection = document.getElementById('discover-section');
+        const discoverSection = document.getElementById("discover-section");
         if (discoverSection) {
-          discoverSection.scrollIntoView({ behavior: 'smooth' });
+          discoverSection.scrollIntoView({ behavior: "smooth" });
         }
         break;
       }
-      case 'popular': {
+      case "popular": {
         // Fetch popular recipes (you can customize the category)
-        onShowCategoryRecipes('Popular', 'Miscellaneous');
+        onShowCategoryRecipes("Popular", "Miscellaneous");
         break;
       }
-      case 'breakfast': {
-        onShowCategoryRecipes('Breakfast', 'Breakfast');
+      case "breakfast": {
+        onShowCategoryRecipes("Breakfast", "Breakfast");
         break;
       }
-      case 'lunch': {
+      case "lunch": {
         // Using a lunch-appropriate category
-        onShowCategoryRecipes('Lunch', 'Chicken');
+        onShowCategoryRecipes("Lunch", "Chicken");
         break;
       }
-      case 'dinner': {
-        onShowCategoryRecipes('Dinner', 'Beef');
+      case "dinner": {
+        onShowCategoryRecipes("Dinner", "Beef");
         break;
       }
-      case 'dessert': {
-        onShowCategoryRecipes('Dessert', 'Dessert');
+      case "dessert": {
+        onShowCategoryRecipes("Dessert", "Dessert");
         break;
       }
       default:
@@ -155,10 +171,7 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
                   onMouseEnter={() => setIsCategoriesOpen(true)}
                   onMouseLeave={() => setIsCategoriesOpen(false)}
                 >
-                  <button
-                    className="flex items-center space-x-3"
-                    type="button"
-                  >
+                  <button className="flex items-center space-x-3" type="button">
                     <Menu
                       className="text-gray-500 hover:text-red-500 cursor-pointer"
                       size={22}
@@ -170,7 +183,13 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
                   {isCategoriesOpen && (
                     <div className="absolute top-6 left-0 z-50 w-56 bg-white rounded-md shadow-lg border py-2">
                       <button
-                        onClick={() => handleCategoryClick('videos')}
+                        onClick={() => {
+                          setIsCategoriesOpen(false);
+                          const videosSection = document.getElementById("videos-section");
+                          if (videosSection) {
+                            videosSection.scrollIntoView({ behavior: "smooth" });
+                          }
+                        }}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
                       >
                         Video Recipes
@@ -182,37 +201,43 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
                         A-Z Recipes
                       </button>
                       <button
-                        onClick={() => handleCategoryClick('this-week')}
+                        onClick={() => {
+                          setIsCategoriesOpen(false);
+                          const discoverSection = document.getElementById("discover-section");
+                          if (discoverSection) {
+                            discoverSection.scrollIntoView({ behavior: "smooth" });
+                          }
+                        }}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
                       >
                         This Week's Recipes
                       </button>
                       <button
-                        onClick={() => handleCategoryClick('popular')}
+                        onClick={() => handleCategoryClick("popular")}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
                       >
                         Popular Recipes
                       </button>
                       <button
-                        onClick={() => handleCategoryClick('breakfast')}
+                        onClick={() => handleCategoryClick("breakfast")}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
                       >
                         Breakfast Recipes
                       </button>
                       <button
-                        onClick={() => handleCategoryClick('lunch')}
+                        onClick={() => handleCategoryClick("lunch")}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
                       >
                         Lunch Recipes
                       </button>
                       <button
-                        onClick={() => handleCategoryClick('dinner')}
+                        onClick={() => handleCategoryClick("dinner")}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
                       >
                         Dinner Recipes
                       </button>
                       <button
-                        onClick={() => handleCategoryClick('dessert')}
+                        onClick={() => handleCategoryClick("dessert")}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
                       >
                         Dessert Recipes
@@ -228,8 +253,7 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
               <span
                 className="text-gray-400 text-sm tracking-tighter hidden lg:inline hover:text-red-500 hover:cursor-pointer"
                 onClick={() => {
-                  const videosSection =
-                    document.getElementById("videos-section");
+                  const videosSection = document.getElementById("videos-section");
                   if (videosSection) {
                     videosSection.scrollIntoView({ behavior: "smooth" });
                   }
@@ -253,8 +277,7 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
               <span
                 className="text-gray-400 text-sm tracking-tighter hidden lg:inline hover:text-red-500 hover:cursor-pointer"
                 onClick={() => {
-                  const discoverSection =
-                    document.getElementById("discover-section");
+                  const discoverSection = document.getElementById("discover-section");
                   if (discoverSection) {
                     discoverSection.scrollIntoView({ behavior: "smooth" });
                   }
@@ -296,24 +319,36 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
 
                 {isCategoriesOpen && (
                   <div className="absolute top-7 left-0 z-50 w-48 bg-white rounded-md shadow-lg border py-2">
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
+                    <button
+                      onClick={() => {
+                        setIsCategoriesOpen(false);
+                        const videosSection = document.getElementById("videos-section");
+                        if (videosSection) {
+                          videosSection.scrollIntoView({ behavior: "smooth" });
+                        }
+                      }}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500 w-full text-left"
                     >
                       Video Recipes
-                    </a>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
+                    </button>
+                    <button
+                      onClick={() => setIsAZModalOpen(true)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500 w-full text-left"
                     >
                       A-Z Recipes
-                    </a>
-                    <a
-                      href="#"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsCategoriesOpen(false);
+                        const discoverSection = document.getElementById("discover-section");
+                        if (discoverSection) {
+                          discoverSection.scrollIntoView({ behavior: "smooth" });
+                        }
+                      }}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500 w-full text-left"
                     >
                       This Week's Recipes
-                    </a>
+                    </button>
                     <a
                       href="#"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
@@ -446,16 +481,13 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
               <div className="hidden lg:block pt-2">
                 <div className="flex items-center space-x-8">
                   <div className="relative">
-                    <button
-                      onClick={() => {
-                        const heroSection = document.getElementById("hero-section");
-                        if (heroSection) heroSection.scrollIntoView({ behavior: "smooth" });
-                      }}
+                    <Link
+                      to="/"
                       className="text-gray-800 hover:text-red-500 hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
                     >
                       Home
                       {/* <ChevronDown size={14} className="ml-1 mt-1" /> */}
-                    </button>
+                    </Link>
                     {/* {activeDropdown === "home" && (
                       <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
                         <a
@@ -475,16 +507,13 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
                   </div>
 
                   <div className="relative">
-                    <button
-                      onClick={() => {
-                        const newRecipeSection = document.getElementById("new-recipe-section");
-                        if (newRecipeSection) newRecipeSection.scrollIntoView({ behavior: "smooth" });
-                      }}
+                    <Link
+                      to="/recipes"
                       className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
                     >
                       Recipes
                       {/* <ChevronDown size={14} className="ml-1 mt-1" /> */}
-                    </button>
+                    </Link>
                     {/* {activeDropdown === "recipes" && (
                       <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
                         <a
@@ -503,6 +532,16 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
                     )} */}
                   </div>
 
+                  {/* Rooms */}
+                  <div className="relative">
+                    <Link
+                      to="/rooms"
+                      className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
+                    >
+                      Rooms
+                    </Link>
+                  </div>
+
                   {/* Cuisines */}
                   <div
                     className="relative"
@@ -518,19 +557,135 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
                     </button>
                     {activeDropdown === "cuisines" && (
                       <div className="absolute z-50 w-48 bg-white rounded-md shadow-lg border py-1">
-                        <a onClick={() => onShowCategoryRecipes('Italian', 'Italian', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Italian</a>
-                        <a onClick={() => onShowCategoryRecipes('French', 'French', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">French</a>
-                        <a onClick={() => onShowCategoryRecipes('Mexican', 'Mexican', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Mexican</a>
-                        <a onClick={() => onShowCategoryRecipes('Japanese', 'Japanese', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Japanese</a>
-                        <a onClick={() => onShowCategoryRecipes('Chinese', 'Chinese', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Chinese</a>
-                        <a onClick={() => onShowCategoryRecipes('Greek', 'Greek', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Greek</a>
-                        <a onClick={() => onShowCategoryRecipes('Spanish', 'Spanish', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Spanish</a>
-                        <a onClick={() => onShowCategoryRecipes('Thai', 'Thai', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Thai</a>
-                        <a onClick={() => onShowCategoryRecipes('Turkish', 'Turkish', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Turkish</a>
-                        <a onClick={() => onShowCategoryRecipes('Indian', 'Indian', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Indian</a>
-                        <a onClick={() => onShowCategoryRecipes('Moroccan', 'Moroccan', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Moroccan</a>
-                        <a onClick={() => onShowCategoryRecipes('American', 'American', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">American</a>
-                        <a onClick={() => onShowCategoryRecipes('British', 'British', 'area')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">British</a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes("Italian", "Italian", "area")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Italian
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes("French", "French", "area")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          French
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes("Mexican", "Mexican", "area")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Mexican
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes(
+                              "Japanese",
+                              "Japanese",
+                              "area"
+                            )
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Japanese
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes("Chinese", "Chinese", "area")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Chinese
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes("Greek", "Greek", "area")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Greek
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes("Spanish", "Spanish", "area")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Spanish
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes("Thai", "Thai", "area")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Thai
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes("Turkish", "Turkish", "area")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Turkish
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes("Indian", "Indian", "area")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Indian
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes(
+                              "Moroccan",
+                              "Moroccan",
+                              "area"
+                            )
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Moroccan
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes(
+                              "American",
+                              "American",
+                              "area"
+                            )
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          American
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes("British", "British", "area")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          British
+                        </a>
                       </div>
                     )}
                   </div>
@@ -550,20 +705,160 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
                     </button>
                     {activeDropdown === "categories" && (
                       <div className="absolute z-50 w-48 bg-white rounded-md shadow-lg border py-1">
-                        <a onClick={() => onShowCategoryRecipes('Beef', 'Beef', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Beef</a>
-                        <a onClick={() => onShowCategoryRecipes('Chicken', 'Chicken', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Chicken</a>
-                        <a onClick={() => onShowCategoryRecipes('Dessert', 'Dessert', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Dessert</a>
-                        <a onClick={() => onShowCategoryRecipes('Lamb', 'Lamb', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Lamb</a>
-                        <a onClick={() => onShowCategoryRecipes('Miscellaneous', 'Miscellaneous', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Miscellaneous</a>
-                        <a onClick={() => onShowCategoryRecipes('Pasta', 'Pasta', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Pasta</a>
-                        <a onClick={() => onShowCategoryRecipes('Pork', 'Pork', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Pork</a>
-                        <a onClick={() => onShowCategoryRecipes('Seafood', 'Seafood', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Seafood</a>
-                        <a onClick={() => onShowCategoryRecipes('Side', 'Side', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Side</a>
-                        <a onClick={() => onShowCategoryRecipes('Starter', 'Starter', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Starter</a>
-                        <a onClick={() => onShowCategoryRecipes('Vegan', 'Vegan', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Vegan</a>
-                        <a onClick={() => onShowCategoryRecipes('Vegetarian', 'Vegetarian', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Vegetarian</a>
-                        <a onClick={() => onShowCategoryRecipes('Breakfast', 'Breakfast', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Breakfast</a>
-                        <a onClick={() => onShowCategoryRecipes('Goat', 'Goat', 'category')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Goat</a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes("Beef", "Beef", "category")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Beef
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes(
+                              "Chicken",
+                              "Chicken",
+                              "category"
+                            )
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Chicken
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes(
+                              "Dessert",
+                              "Dessert",
+                              "category"
+                            )
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Dessert
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes("Lamb", "Lamb", "category")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Lamb
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes(
+                              "Miscellaneous",
+                              "Miscellaneous",
+                              "category"
+                            )
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Miscellaneous
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes("Pasta", "Pasta", "category")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Pasta
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes("Pork", "Pork", "category")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Pork
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes(
+                              "Seafood",
+                              "Seafood",
+                              "category"
+                            )
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Seafood
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes("Side", "Side", "category")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Side
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes(
+                              "Starter",
+                              "Starter",
+                              "category"
+                            )
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Starter
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes("Vegan", "Vegan", "category")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Vegan
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes(
+                              "Vegetarian",
+                              "Vegetarian",
+                              "category"
+                            )
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Vegetarian
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes(
+                              "Breakfast",
+                              "Breakfast",
+                              "category"
+                            )
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Breakfast
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowCategoryRecipes("Goat", "Goat", "category")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Goat
+                        </a>
                       </div>
                     )}
                   </div>
@@ -583,24 +878,114 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
                     </button>
                     {activeDropdown === "blog" && (
                       <div className="absolute z-50 w-48 bg-white rounded-md shadow-lg border py-1">
-                        <a onClick={() => onShowBlogArticle('Healthy Eating')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Essential Cooking Tips</a>
-                        <a onClick={() => onShowBlogArticle('Easy Dinner Recipes')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Quick & Healthy Weeknight Dinners</a>
-                        <a onClick={() => onShowBlogArticle('Baking Tips')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Mastering the Art of One-Pot Cooking</a>
-                        <a onClick={() => onShowBlogArticle('Vegetarian Meals')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Cooking on a Budget</a>
-                        <a onClick={() => onShowBlogArticle('Food Science')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Baking Basics</a>
-                        <a onClick={() => onShowBlogArticle('Global Cuisine')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Spices That Instantly Elevate Any Dish</a>
-                        <a onClick={() => onShowBlogArticle('Meal Prep Ideas')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">Meal Prep Ideas</a>
-                        <a onClick={() => onShowBlogArticle('Restaurant News')} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" href="#">From Fridge to Feast</a>
+                        <a
+                          onClick={() => onShowBlogArticle("Healthy Eating")}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Essential Cooking Tips
+                        </a>
+                        <a
+                          onClick={() =>
+                            onShowBlogArticle("Easy Dinner Recipes")
+                          }
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Quick & Healthy Weeknight Dinners
+                        </a>
+                        <a
+                          onClick={() => onShowBlogArticle("Baking Tips")}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Mastering the Art of One-Pot Cooking
+                        </a>
+                        <a
+                          onClick={() => onShowBlogArticle("Vegetarian Meals")}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Cooking on a Budget
+                        </a>
+                        <a
+                          onClick={() => onShowBlogArticle("Food Science")}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Baking Basics
+                        </a>
+                        <a
+                          onClick={() => onShowBlogArticle("Global Cuisine")}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Spices That Instantly Elevate Any Dish
+                        </a>
+                        <a
+                          onClick={() => onShowBlogArticle("Meal Prep Ideas")}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          Meal Prep Ideas
+                        </a>
+                        <a
+                          onClick={() => onShowBlogArticle("Restaurant News")}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          href="#"
+                        >
+                          From Fridge to Feast
+                        </a>
                       </div>
                     )}
                   </div>
 
+                  {/* REMOVE Register and Login buttons from desktop nav */}
+                  {/* <Link to="/register" className="text-gray-800 hover:text-red-500 text-lg font-semibold">
+                    Register
+                  </Link> */}
+                  {/* <Link to="/login" className="text-gray-800 hover:text-red-500 text-lg font-semibold">
+                    Login
+                  </Link> */}
+                  <Link
+                    to="/recipes"
+                    className="text-gray-800 hover:text-red-500 text-lg font-semibold"
+                  >
+                    Recipes
+                  </Link>
+                  <Link
+                    to="/add-recipe"
+                    className="text-gray-800 hover:text-red-500 text-lg font-semibold"
+                  >
+                    Add Recipe
+                  </Link>
+                  <Link
+                    to="/profile"
+                    className="text-gray-800 hover:text-red-500 text-lg font-semibold"
+                  >
+                    Profile
+                  </Link>
+                  <Link
+                    to="/ai-suggest"
+                    className="text-gray-800 hover:text-red-500 text-lg font-semibold"
+                  >
+                    AI Suggest
+                  </Link>
                 </div>
               </div>
             </div>
 
-            {/* Right side actions */}
+                          {/* Right side actions */}
             <div className="hidden lg:flex items-center space-x-4">
+              <Link to="/recipes" className="text-gray-800 hover:text-red-500 text-sm font-medium">
+                Recipes
+              </Link>
+              <Link to="/ai-suggest" className="text-gray-800 hover:text-red-500 text-sm font-medium">
+                AI Suggest
+              </Link>
+              <Link to="/profile" className="text-gray-800 hover:text-red-500 text-sm font-medium">
+                Profile
+              </Link>
               <button className="text-black hover:text-red-500 hover:cursor-pointer p-1">
                 <Bookmark size={20} />
               </button>
@@ -610,7 +995,6 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
               >
                 <User size={20} />
               </button>
-              <Login isOpen={isLoginOpen} onClose={closeLogin} />
               <button
                 className="text-black hover:text-red-500 hover:cursor-pointer p-1"
                 onClick={openSearch}
@@ -618,20 +1002,26 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
                 <Search size={20} />
               </button>
               <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
-              <button
-                className="bg-gray-200 hover:bg-red-500 hover:text-white text-black px-4.5 py-2.5 font-semibold tracking-tighter rounded-md text-sm font-medium hover:cursor-pointer "
-                onClick={handleOpenAddRecipe}
+              <Link
+                to="/add-recipe"
+                className="bg-gray-200 hover:bg-red-500 hover:text-white text-black px-4.5 py-2.5 font-semibold tracking-tighter rounded-md text-sm font-medium hover:cursor-pointer"
               >
                 Add Recipe
-              </button>
+              </Link>
             </div>
+            
+            {/* Login Modal */}
+            <Login isOpen={isLoginOpen} onClose={closeLogin} />
 
             {/* Medium screen actions (tablet) */}
             <div className="hidden md:flex lg:hidden items-center space-x-2 sm:space-x-3">
               <button className="text-black hover:text-red-500 p-1">
                 <Search size={18} />
               </button>
-              <button className="text-black hover:text-red-500 p-1">
+              <button 
+                className="text-black hover:text-red-500 p-1"
+                onClick={openLogin}
+              >
                 <User size={18} />
               </button>
               <button className="bg-gray-200 hover:bg-red-500 hover:text-white text-black px-2 sm:px-3 py-1.5 sm:py-2 font-semibold tracking-tighter rounded-md text-xs sm:text-sm font-medium">
@@ -650,7 +1040,10 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
               <button className="text-black hover:text-red-500 p-1">
                 <Search size={16} />
               </button>
-              <button className="text-black hover:text-red-500 p-1">
+              <button 
+                className="text-black hover:text-red-500 p-1"
+                onClick={openLogin}
+              >
                 <User size={16} />
               </button>
               <button
@@ -670,65 +1063,29 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
           <div className="px-3 sm:px-4 pt-2 pb-3 space-y-1 bg-white">
             {/* Mobile/Tablet navigation with dropdowns */}
             <div className="space-y-1">
-              <button
-                onClick={() => toggleDropdown("mobile-home")}
+              <Link
+                to="/"
                 className="w-full text-left text-gray-800 hover:text-red-500 flex items-center justify-between px-2 sm:px-3 py-2 text-sm font-medium"
               >
                 Home
-                <ChevronDown
-                  size={16}
-                  className={`transition-transform ${
-                    activeDropdown === "mobile-home" ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-              {activeDropdown === "mobile-home" && (
-                <div className="ml-3 sm:ml-4 space-y-1">
-                  <a
-                    href="#"
-                    className="block px-2 sm:px-3 py-2 text-sm text-gray-600 hover:text-red-500"
-                  >
-                    Home Option 1
-                  </a>
-                  <a
-                    href="#"
-                    className="block px-2 sm:px-3 py-2 text-sm text-gray-600 hover:text-red-500"
-                  >
-                    Home Option 2
-                  </a>
-                </div>
-              )}
+              </Link>
             </div>
 
             <div className="space-y-1">
-              <button
-                onClick={() => toggleDropdown("mobile-recipes")}
+              <Link
+                to="/recipes"
                 className="w-full text-left text-gray-800 hover:text-red-500 flex items-center justify-between px-2 sm:px-3 py-2 text-sm font-medium"
               >
                 Recipes
-                <ChevronDown
-                  size={16}
-                  className={`transition-transform ${
-                    activeDropdown === "mobile-recipes" ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-              {activeDropdown === "mobile-recipes" && (
-                <div className="ml-3 sm:ml-4 space-y-1">
-                  <a
-                    href="#"
-                    className="block px-2 sm:px-3 py-2 text-sm text-gray-600 hover:text-red-500"
-                  >
-                    All Recipes
-                  </a>
-                  <a
-                    href="#"
-                    className="block px-2 sm:px-3 py-2 text-sm text-gray-600 hover:text-red-500"
-                  >
-                    Popular Recipes
-                  </a>
-                </div>
-              )}
+              </Link>
+            </div>
+            <div className="space-y-1">
+              <Link
+                to="/rooms"
+                className="w-full text-left text-gray-800 hover:text-red-500 flex items-center justify-between px-2 sm:px-3 py-2 text-sm font-medium"
+              >
+                Rooms
+              </Link>
             </div>
 
             <div className="space-y-1">
@@ -854,10 +1211,30 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
               )}
             </div>
 
+            {/* Navigation Links for Mobile */}
+            <div className="px-3 py-2 md:hidden space-y-2">
+              <Link to="/recipes" className="block w-full text-gray-700 hover:text-red-500 px-3 py-2 text-sm font-medium">
+                Recipes
+              </Link>
+              <Link to="/ai-suggest" className="block w-full text-gray-700 hover:text-red-500 px-3 py-2 text-sm font-medium">
+                AI Suggest
+              </Link>
+              <Link to="/profile" className="block w-full text-gray-700 hover:text-red-500 px-3 py-2 text-sm font-medium">
+                Profile
+              </Link>
+              {/* REMOVE Register and Login links from mobile nav */}
+              {/* <Link to="/register" className="block w-full text-gray-700 hover:text-red-500 px-3 py-2 text-sm font-medium">
+                Register
+              </Link> */}
+              {/* <Link to="/login" className="block w-full text-gray-700 hover:text-red-500 px-3 py-2 text-sm font-medium">
+                Login
+              </Link> */}
+            </div>
+            
             <div className="px-3 py-2 md:hidden">
-              <button className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded text-sm font-medium">
+              <Link to="/add-recipe" className="block w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded text-sm font-medium text-center">
                 Add Recipe
-              </button>
+              </Link>
             </div>
 
             {/* Social media icons for mobile */}
@@ -898,16 +1275,32 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
       {showAddRecipeModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-xl w-full max-h-[90vh] overflow-y-auto relative p-8">
-            <button className="absolute top-4 right-4 text-gray-500 hover:text-red-500" onClick={handleCloseAddRecipe}>✕</button>
+            <button
+              className="absolute top-4 right-4 text-gray-500 hover:text-red-500"
+              onClick={handleCloseAddRecipe}
+            >
+              ✕
+            </button>
             <h2 className="text-2xl font-bold mb-4 text-center">Register</h2>
             <form onSubmit={handleCreateRecipe}>
               <div className="mb-4">
                 <label className="block font-semibold mb-1">Title</label>
-                <input type="text" className="w-full border rounded px-3 py-2" value={recipeTitle} onChange={e => setRecipeTitle(e.target.value)} required />
+                <input
+                  type="text"
+                  className="w-full border rounded px-3 py-2"
+                  value={recipeTitle}
+                  onChange={(e) => setRecipeTitle(e.target.value)}
+                  required
+                />
               </div>
               <div className="mb-4">
                 <label className="block font-semibold mb-1">Description</label>
-                <textarea className="w-full border rounded px-3 py-2" value={recipeDescription} onChange={e => setRecipeDescription(e.target.value)} required />
+                <textarea
+                  className="w-full border rounded px-3 py-2"
+                  value={recipeDescription}
+                  onChange={(e) => setRecipeDescription(e.target.value)}
+                  required
+                />
               </div>
               <div className="mb-4">
                 <label className="block font-semibold mb-1">Image</label>
@@ -918,36 +1311,94 @@ const Navbar = ({ onShowAZModal, onShowCategoryRecipes, onShowBlogArticle }) => 
                   onChange={handleImageChange}
                   accept="image/*"
                 />
-                <button type="button" className="text-blue-600 underline" onClick={handleAddImageClick}>
+                <button
+                  type="button"
+                  className="text-blue-600 underline"
+                  onClick={handleAddImageClick}
+                >
                   + Add Image
                 </button>
-                {recipeImage && <div className="mt-2 text-sm text-gray-700">Selected: {recipeImage.name}</div>}
+                {recipeImage && (
+                  <div className="mt-2 text-sm text-gray-700">
+                    Selected: {recipeImage.name}
+                  </div>
+                )}
               </div>
               <div className="mb-4">
                 <label className="block font-semibold mb-1">Ingredients</label>
                 {recipeIngredients.map((ing, idx) => (
                   <div key={idx} className="flex mb-2">
-                    <input type="text" className="w-full border rounded px-3 py-2" value={ing} onChange={e => handleIngredientChange(idx, e.target.value)} required />
-                    <button type="button" className="ml-2 text-red-500" onClick={() => handleRemoveIngredient(idx)}>✕</button>
+                    <input
+                      type="text"
+                      className="w-full border rounded px-3 py-2"
+                      value={ing}
+                      onChange={(e) =>
+                        handleIngredientChange(idx, e.target.value)
+                      }
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="ml-2 text-red-500"
+                      onClick={() => handleRemoveIngredient(idx)}
+                    >
+                      ✕
+                    </button>
                   </div>
                 ))}
-                <button type="button" className="text-blue-600 underline" onClick={handleAddIngredient}>+ Add Ingredient</button>
+                <button
+                  type="button"
+                  className="text-blue-600 underline"
+                  onClick={handleAddIngredient}
+                >
+                  + Add Ingredient
+                </button>
               </div>
               <div className="mb-4">
                 <label className="block font-semibold mb-1">Steps</label>
                 {recipeSteps.map((step, idx) => (
                   <div key={idx} className="flex mb-2">
-                    <input type="text" className="w-full border rounded px-3 py-2" value={step} onChange={e => handleStepChange(idx, e.target.value)} required />
-                    <button type="button" className="ml-2 text-red-500" onClick={() => handleRemoveStep(idx)}>✕</button>
+                    <input
+                      type="text"
+                      className="w-full border rounded px-3 py-2"
+                      value={step}
+                      onChange={(e) => handleStepChange(idx, e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="ml-2 text-red-500"
+                      onClick={() => handleRemoveStep(idx)}
+                    >
+                      ✕
+                    </button>
                   </div>
                 ))}
-                <button type="button" className="text-blue-600 underline" onClick={handleAddStep}>+ Add Step</button>
+                <button
+                  type="button"
+                  className="text-blue-600 underline"
+                  onClick={handleAddStep}
+                >
+                  + Add Step
+                </button>
               </div>
               <div className="mb-4">
-                <label className="block font-semibold mb-1">Tags (comma separated)</label>
-                <input type="text" className="w-full border rounded px-3 py-2" value={recipeTags} onChange={e => setRecipeTags(e.target.value)} />
+                <label className="block font-semibold mb-1">
+                  Tags (comma separated)
+                </label>
+                <input
+                  type="text"
+                  className="w-full border rounded px-3 py-2"
+                  value={recipeTags}
+                  onChange={(e) => setRecipeTags(e.target.value)}
+                />
               </div>
-              <button type="submit" className="w-full bg-red-500 text-white py-2 rounded font-semibold mt-4">Create Recipe</button>
+              <button
+                type="submit"
+                className="w-full bg-red-500 text-white py-2 rounded font-semibold mt-4"
+              >
+                Create Recipe
+              </button>
             </form>
           </div>
         </div>
