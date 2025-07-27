@@ -122,7 +122,7 @@ export default function OurJournal() {
     },
     {
       id: 2,
-      category: 'SPOTLIGHTS',
+      category: 'Kitchen Moments',
       categoryColor: 'bg-red-500',
       title: 'Made for Beginners — Perfect for Young Cooks',
       author: 'Olivia Thompson',
@@ -134,7 +134,7 @@ export default function OurJournal() {
     },
     {
       id: 3,
-      category: 'COLLECTIONS',
+      category: 'Mood Meals',
       categoryColor: 'bg-red-500',
       title: 'Cravings Welcome: It’s Junk Food Time!',
       author: 'Olivia Thompson',
@@ -147,13 +147,13 @@ export default function OurJournal() {
   ];
 
   return (
-    <div className="max-w-[88%] mx-auto px-4 py-20 min-h-screen">
+    <div className="max-w-[88%] mx-auto px-4 pt-12 pb-6">
       {/* Header Section */}
       <div className="relative flex flex-col items-center text-center mb-18">
         <span className="absolute text-[8rem] opacity-15 z-0 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 select-none pointer-events-none">🍴</span>
-        <h2 className="text-5xl font-semibold tracking-tighter text-gray-900 z-10 mb-4">Our Journal</h2>
+        <h2 className="text-5xl font-semibold tracking-tighter text-gray-900 z-10 mb-4">Featured Recipes</h2>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto tracking-tighter">
-          Discover stories, tips, and trends to inspire your culinary journey and creativity!
+        Hand-picked recipe collections for every taste, skill level, and craving!
         </p>
       </div>
 
@@ -197,23 +197,8 @@ export default function OurJournal() {
                 {article.title}
               </h3>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-black text-sm gap-y-1">
-                <span>by <span className="font-bold text-black hover:text-red-500 hover:cursor-pointer">{article.author}</span></span>
-                {/* <span className="mx-1">•</span> */}
-                <div className='flex items-center justify-between sm:justify-start sm:gap-x-4'>
-                <div className='flex items-center text-sm text-semibold gap-x-1 text-gray-500 tracking-tighter'>
-                <Clock className="w-4 h-4" />
-                <span>{article.date}</span>
-                </div>
-                {/* <span className="mx-1">•</span> */}
-                <div className='flex items-center text-xs text-gray-500 tracking-tighter'>
-                <MessageCircle className="inline w-4 h-4 mr-1" />
-                <span>{article.comments}</span>
-                  </div>
-                </div>
               </div>
               <div className="text-gray-500 text-bold text-xs mt-2 flex items-center gap-2">
-                {/* <Clock className="w-4 h-4" /> */}
-                <span>{article.readTime}</span>
               </div>
             </div>
           </div>

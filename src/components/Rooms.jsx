@@ -22,8 +22,8 @@ export default function Rooms() {
     try {
       const res = await API.get("/users/profile");
       setRooms(res.data.rooms || []);
-    } catch (err) {
-      setError("Failed to load rooms");
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to load rooms");
     } finally {
       setLoading(false);
     }
@@ -53,7 +53,15 @@ export default function Rooms() {
       setJoinId("");
       fetchRooms();
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to join room");
+      console.error('Join room error:', err);
+      let msg = err.response?.data?.message;
+      if (!msg && err.response?.data) msg = JSON.stringify(err.response.data);
+      if (!msg && err.message) msg = err.message;
+      if (!msg) msg = `Failed to join room (status: ${err.response?.status || 'unknown'})`;
+      if (msg && (msg.includes('<html') || msg.includes('<!DOCTYPE'))) {
+        msg = 'Invalid Room ID. Please check and try again.';
+      }
+      setError(msg);
     }
   };
 
@@ -67,7 +75,12 @@ export default function Rooms() {
       setInviteCode("");
       fetchRooms();
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to join room via invite");
+      const msg = err.response?.data?.message;
+      if (msg && msg.toLowerCase().includes('already a member')) {
+        setError('You are already a member of this room.');
+      } else {
+        setError(msg || "Failed to join room via invite");
+      }
     }
   };
 

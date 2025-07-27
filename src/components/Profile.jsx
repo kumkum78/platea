@@ -2,21 +2,40 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
 import { useRecipeContext } from "../hooks/useRecipeContext";
+import { X, Clock, ChefHat, Trash2, Heart, Bookmark, Edit } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import { X, Clock, ChefHat, Trash2, Heart, Bookmark } from "lucide-react";
 
-export default function Profile() {
+export default function Profile({ onShowLogin }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const { loadUserPreferences } = useRecipeContext();
-  const { logout } = useAuth();
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const [recipeModalOpen, setRecipeModalOpen] = useState(false);
   const [recipeDetails, setRecipeDetails] = useState(null);
   const [recipeLoading, setRecipeLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+
+  // Edit modal state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    description: "",
+    ingredients: "",
+    steps: "",
+    image: ""
+  });
+  const [editingRecipe, setEditingRecipe] = useState(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  // Delete modal state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [recipeToDelete, setRecipeToDelete] = useState(null);
+
 
   useEffect(() => {
     fetchProfile();
@@ -31,12 +50,25 @@ export default function Profile() {
       console.log("Profile data received:", response.data);
       console.log("Uploaded recipes:", response.data.uploadedRecipes);
       console.log("Uploaded recipes length:", response.data.uploadedRecipes ? response.data.uploadedRecipes.length : 0);
+      console.log("Liked recipes:", response.data.likedRecipes);
+      console.log("Bookmarked recipes:", response.data.bookmarkedRecipes);
+      
+      // Debug: Check for Dal Makhni recipe specifically
+      const dalMakhniInLiked = response.data.likedRecipes?.find(r => r.title === 'Dal Makhni');
+      const dalMakhniInBookmarked = response.data.bookmarkedRecipes?.find(r => r.title === 'Dal Makhni');
+      const dalMakhniInUploaded = response.data.uploadedRecipes?.find(r => r.title === 'Dal Makhni');
+      
+      console.log("Dal Makhni in Liked:", dalMakhniInLiked);
+      console.log("Dal Makhni in Bookmarked:", dalMakhniInBookmarked);
+      console.log("Dal Makhni in Uploaded:", dalMakhniInUploaded);
+      
       setProfile(response.data);
       // Refresh user preferences after loading profile
       loadUserPreferences();
     } catch (error) {
       console.error("Profile fetch error:", error);
       setError("Failed to fetch profile. Please login first.");
+      if (onShowLogin) onShowLogin();
     } finally {
       setLoading(false);
     }
@@ -44,7 +76,7 @@ export default function Profile() {
 
   const handleLogout = () => {
     logout();
-    navigate("/");
+    navigate('/');
   };
 
   const handleRecipeClick = async (recipe) => {
@@ -53,7 +85,23 @@ export default function Profile() {
     setRecipeLoading(true);
 
     try {
-      if (recipe._id.startsWith('external_')) {
+      if (recipe._id && recipe._id.startsWith('external_video_')) {
+        // Always use the same image as the card
+        let img = recipe.image || recipe.strMealThumb;
+        setRecipeDetails({
+          title: recipe.title,
+          image: img,
+          category: recipe.category,
+          cuisine: recipe.cuisine,
+          instructions: `This is a video recipe for ${recipe.title}. Watch the video tutorial to learn how to make this delicious ${recipe.category} dish from ${recipe.cuisine} cuisine.`,
+          ingredients: [`${recipe.title} - ${recipe.category} recipe`],
+          youtube: null,
+          isVideoRecipe: true,
+          difficulty: recipe.difficulty || 'Intermediate',
+          time: recipe.time || '30 min',
+          rating: recipe.rating || 4.5
+        });
+      } else if (recipe._id && recipe._id.startsWith('external_')) {
         // Fetch from TheMealDB
         const recipeId = recipe._id.replace('external_', '');
         const response = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${recipeId}`);
@@ -73,7 +121,17 @@ export default function Profile() {
         }
       } else {
         // Internal recipe - already has details
-        setRecipeDetails(recipe);
+        console.log('Opening internal recipe modal for:', recipe);
+        setRecipeDetails({
+          title: recipe.title,
+          image: recipe.image,
+          description: recipe.description,
+          category: recipe.category || 'Recipe',
+          cuisine: recipe.cuisine || 'Home Cooking',
+          instructions: recipe.steps ? recipe.steps.join('\n\n') : recipe.instructions,
+          ingredients: recipe.ingredients || [],
+          youtube: recipe.youtube
+        });
       }
     } catch (error) {
       console.error('Failed to fetch recipe details:', error);
@@ -81,6 +139,8 @@ export default function Profile() {
       setRecipeLoading(false);
     }
   };
+
+
 
   const getIngredientsList = (meal) => {
     const ingredients = [];
@@ -99,20 +159,24 @@ export default function Profile() {
     setRecipeDetails(null);
   };
 
-  const handleDeleteRecipe = async (recipeId) => {
-    if (!window.confirm('Are you sure you want to delete this recipe? This action cannot be undone.')) {
-      return;
-    }
+  const handleDeleteRecipe = (recipeId) => {
+    setRecipeToDelete(recipeId);
+    setDeleteModalOpen(true);
+  };
 
+  const confirmDeleteRecipe = async () => {
+    if (!recipeToDelete) return;
     try {
-      await API.delete(`/recipes/${recipeId}`);
+      await API.delete(`/recipes/${recipeToDelete}`);
       setSuccessMessage("Recipe deleted successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
-      // Refresh profile to update the uploaded recipes list
       fetchProfile();
     } catch (error) {
       console.error("Failed to delete recipe:", error);
       alert(error.response?.data?.message || "Failed to delete recipe");
+    } finally {
+      setDeleteModalOpen(false);
+      setRecipeToDelete(null);
     }
   };
 
@@ -135,12 +199,12 @@ export default function Profile() {
 
   const handleUnbookmarkRecipe = async (recipeId, e) => {
     e.stopPropagation(); // Prevent opening the recipe modal
-    if (!window.confirm('Are you sure you want to remove this recipe from bookmarks?')) {
+    if (!window.confirm('Are you sure you want to remove this bookmark?')) {
       return;
     }
     try {
       await API.delete(`/users/bookmark/${recipeId}`);
-      setSuccessMessage("Recipe removed from bookmarks successfully!");
+      setSuccessMessage("Recipe unbookmarked successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
       // Refresh profile to update the bookmarked recipes list
       fetchProfile();
@@ -148,6 +212,110 @@ export default function Profile() {
       console.error("Failed to unbookmark recipe:", error);
       alert(error.response?.data?.message || "Failed to unbookmark recipe");
     }
+  };
+
+  // Edit recipe functionality
+  const handleEditRecipe = (recipe) => {
+    setEditingRecipe(recipe);
+    setEditForm({
+      title: recipe.title || "",
+      description: recipe.description || "",
+      ingredients: recipe.ingredients ? recipe.ingredients.join(", ") : "",
+      steps: recipe.steps ? recipe.steps.join(", ") : "",
+      image: recipe.image || ""
+    });
+    setSelectedFile(null);
+    setImagePreview(null);
+    setEditModalOpen(true);
+  };
+
+  const handleEditFormChange = (e) => {
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  };
+
+  const handleEditFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setEditLoading(true);
+    
+    try {
+      let imageUrl = editForm.image; // Keep URL if provided
+
+      // If file is selected, upload it first
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('image', selectedFile);
+        
+        try {
+          const uploadResponse = await API.post('/recipes/upload-image', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+          imageUrl = uploadResponse.data.imageUrl;
+          console.log('New image uploaded successfully:', imageUrl);
+        } catch (uploadError) {
+          console.error('Image upload failed:', uploadError);
+          // Continue with existing image if upload fails
+        }
+      }
+
+      const payload = {
+        title: editForm.title,
+        description: editForm.description,
+        image: imageUrl,
+        ingredients: editForm.ingredients.split(",").map(item => item.trim()).filter(item => item),
+        steps: editForm.steps.split(",").map(item => item.trim()).filter(item => item)
+      };
+      
+      console.log('Updating recipe with payload:', payload);
+      await API.put(`/recipes/${editingRecipe._id}`, payload);
+      
+      setSuccessMessage("Recipe updated successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+      
+      // Close edit modal and refresh profile
+      setEditModalOpen(false);
+      setEditingRecipe(null);
+      fetchProfile();
+    } catch (err) {
+      console.error('Recipe update error:', err);
+      setSuccessMessage(err.response?.data?.message || "Failed to update recipe");
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const closeEditModal = () => {
+    setEditModalOpen(false);
+    setEditingRecipe(null);
+    setEditForm({
+      title: "",
+      description: "",
+      ingredients: "",
+      steps: "",
+      image: ""
+    });
+    setSelectedFile(null);
+    setImagePreview(null);
+  };
+
+  const removeEditImage = () => {
+    setSelectedFile(null);
+    setImagePreview(null);
+    setEditForm({ ...editForm, image: "" });
   };
 
   if (loading) {
@@ -164,7 +332,7 @@ export default function Profile() {
         <div className="text-center">
           <div className="text-red-600 mb-4">{error}</div>
           <button
-            onClick={() => navigate("/login")}
+            onClick={onShowLogin}
             className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
           >
             Go to Login
@@ -201,12 +369,14 @@ export default function Profile() {
               <h1 className="text-3xl font-bold text-gray-900">{profile.name}'s Profile</h1>
               <p className="text-gray-600">{profile.email}</p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-            >
-              Logout
-            </button>
+            <div className="flex justify-end items-center">
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-8 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
 
@@ -225,21 +395,48 @@ export default function Profile() {
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start space-x-3 flex-1">
-                        {recipe.image && (
-                          <img 
-                            src={recipe.image} 
-                            alt={recipe.title} 
-                            className="w-12 h-12 object-cover rounded-md"
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                            }}
-                          />
-                        )}
+                        {(() => {
+                          // Always use correct fields for video recipes
+                          let img = recipe.image;
+                          let title = recipe.title;
+                          if (recipe._id && recipe._id.startsWith('external_video_')) {
+                            img = img || recipe.strMealThumb;
+                            title = title || recipe.strMeal;
+                          }
+                          return img ? (
+                            <img 
+                              src={
+                                img.startsWith('http')
+                                  ? img
+                                  : img.startsWith('/images/')
+                                    ? img // Use directly for frontend public images
+                                    : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${img}`
+                              }
+                              alt={title} 
+                              className="w-12 h-12 object-cover rounded-md"
+                              onError={(e) => {
+                                const fallbackImages = [
+                                  '/images/recipe-2-550x690.jpg',
+                                  '/images/recipe-6-630x785.jpg',
+                                  '/images/recipe-18-630x785.jpg',
+                                  '/images/recipe-20-630x785.jpg'
+                                ];
+                                const randomFallback = fallbackImages[Math.floor(Math.random() * fallbackImages.length)];
+                                e.target.src = randomFallback;
+                                e.target.onerror = null;
+                              }}
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center">
+                              <span className="text-gray-500 text-xs">🍴</span>
+                            </div>
+                          );
+                        })()}
                         <div className="flex-1">
-                          <h3 className="font-medium text-gray-900">{recipe.title}</h3>
+                          <h3 className="font-medium text-gray-900">{recipe._id && recipe._id.startsWith('external_video_') ? (recipe.title || recipe.strMeal) : recipe.title}</h3>
                           <p className="text-sm text-gray-600">{recipe.description}</p>
-                          {recipe.category && (
-                            <p className="text-xs text-red-500 mt-1">{recipe.category}</p>
+                          {(recipe._id && recipe._id.startsWith('external_video_') ? (recipe.category || recipe.strCategory) : recipe.category) && (
+                            <p className="text-xs text-red-500 mt-1">{recipe._id && recipe._id.startsWith('external_video_') ? (recipe.category || recipe.strCategory) : recipe.category}</p>
                           )}
                         </div>
                       </div>
@@ -272,21 +469,48 @@ export default function Profile() {
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start space-x-3 flex-1">
-                        {recipe.image && (
-                          <img 
-                            src={recipe.image} 
-                            alt={recipe.title} 
-                            className="w-12 h-12 object-cover rounded-md"
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                            }}
-                          />
-                        )}
+                        {(() => {
+                          // Always use correct fields for video recipes
+                          let img = recipe.image;
+                          let title = recipe.title;
+                          if (recipe._id && recipe._id.startsWith('external_video_')) {
+                            img = img || recipe.strMealThumb;
+                            title = title || recipe.strMeal;
+                          }
+                          return img ? (
+                            <img 
+                              src={
+                                img.startsWith('http')
+                                  ? img
+                                  : img.startsWith('/images/')
+                                    ? img // Use directly for frontend public images
+                                    : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${img}`
+                              }
+                              alt={title} 
+                              className="w-12 h-12 object-cover rounded-md"
+                              onError={(e) => {
+                                const fallbackImages = [
+                                  '/images/recipe-2-550x690.jpg',
+                                  '/images/recipe-6-630x785.jpg',
+                                  '/images/recipe-18-630x785.jpg',
+                                  '/images/recipe-20-630x785.jpg'
+                                ];
+                                const randomFallback = fallbackImages[Math.floor(Math.random() * fallbackImages.length)];
+                                e.target.src = randomFallback;
+                                e.target.onerror = null;
+                              }}
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center">
+                              <span className="text-gray-500 text-xs">🍴</span>
+                            </div>
+                          );
+                        })()}
                         <div className="flex-1">
-                          <h3 className="font-medium text-gray-900">{recipe.title}</h3>
+                          <h3 className="font-medium text-gray-900">{recipe._id && recipe._id.startsWith('external_video_') ? (recipe.title || recipe.strMeal) : recipe.title}</h3>
                           <p className="text-sm text-gray-600">{recipe.description}</p>
-                          {recipe.category && (
-                            <p className="text-xs text-red-500 mt-1">{recipe.category}</p>
+                          {(recipe._id && recipe._id.startsWith('external_video_') ? (recipe.category || recipe.strCategory) : recipe.category) && (
+                            <p className="text-xs text-red-500 mt-1">{recipe._id && recipe._id.startsWith('external_video_') ? (recipe.category || recipe.strCategory) : recipe.category}</p>
                           )}
                         </div>
                       </div>
@@ -319,35 +543,60 @@ export default function Profile() {
                         className="flex items-start space-x-3 flex-1 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
                         onClick={() => handleRecipeClick(recipe)}
                       >
-                        {recipe.image && (
+                        {recipe.image ? (
                           <img 
-                            src={recipe.image} 
+                            src={recipe.image.startsWith('http') ? recipe.image : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${recipe.image}`} 
                             alt={recipe.title} 
                             className="w-12 h-12 object-cover rounded-md"
                             onError={(e) => {
                               console.log('Image failed to load:', recipe.image);
-                              e.target.style.display = 'none';
+                              // Try to use a fallback image from the public images
+                              const fallbackImages = [
+                                '/images/recipe-2-550x690.jpg',
+                                '/images/recipe-6-630x785.jpg',
+                                '/images/recipe-18-630x785.jpg',
+                                '/images/recipe-20-630x785.jpg'
+                              ];
+                              const randomFallback = fallbackImages[Math.floor(Math.random() * fallbackImages.length)];
+                              e.target.src = randomFallback;
+                              e.target.onerror = null; // Prevent infinite loop
                             }}
                             onLoad={() => {
                               console.log('Image loaded successfully:', recipe.image);
                             }}
                           />
+                        ) : (
+                          <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center">
+                            <span className="text-gray-500 text-xs">🍴</span>
+                          </div>
                         )}
                         <div className="flex-1">
                           <h3 className="font-medium text-gray-900">{recipe.title}</h3>
                           <p className="text-sm text-gray-600">{recipe.description}</p>
                         </div>
                       </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteRecipe(recipe._id);
-                        }}
-                        className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors ml-2"
-                        title="Delete recipe"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      <div className="flex items-center space-x-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditRecipe(recipe);
+                          }}
+                          className="text-blue-500 hover:text-blue-700 p-1 rounded-full hover:bg-blue-50 transition-colors"
+                          title="Edit recipe"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteRecipe(recipe._id);
+                          }}
+                          className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors"
+                          title="Delete recipe"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -394,16 +643,40 @@ export default function Profile() {
             ) : recipeDetails ? (
               <div className="p-6">
                 {/* Recipe Image */}
-                {recipeDetails.image && (
+                {recipeDetails.image ? (
                   <img 
-                    src={recipeDetails.image} 
+                    src={
+                      recipeDetails.image.startsWith('http')
+                        ? recipeDetails.image
+                        : recipeDetails.image.startsWith('/images/')
+                          ? recipeDetails.image
+                          : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${recipeDetails.image}`
+                    }
                     alt={recipeDetails.title} 
                     className="w-full h-64 object-cover rounded mb-4"
+                    onError={(e) => {
+                      e.target.src = '/images/recipe-6-630x785.jpg';
+                      e.target.onerror = null;
+                    }}
                   />
+                ) : (
+                  <div className="w-full h-64 bg-gray-200 rounded mb-4 flex items-center justify-center">
+                    <div className="text-center">
+                      <span className="text-6xl text-gray-400">🍴</span>
+                      <p className="text-gray-500 mt-2">No image available</p>
+                    </div>
+                  </div>
                 )}
                 
                 {/* Recipe Title */}
                 <h2 className="text-2xl font-bold mb-2">{recipeDetails.title}</h2>
+                
+                {/* Recipe Description */}
+                {recipeDetails.description && (
+                  <div className="mb-4">
+                    <p className="text-gray-700 leading-relaxed">{recipeDetails.description}</p>
+                  </div>
+                )}
                 
                 {/* Recipe Meta */}
                 <div className="flex items-center space-x-4 mb-4 text-sm text-gray-600">
@@ -434,15 +707,41 @@ export default function Profile() {
                   </div>
                 )}
                 
-                {/* Instructions */}
-                {recipeDetails.instructions && (
+                {/* Instructions/Steps */}
+                {(recipeDetails.instructions || recipeDetails.steps) && (
                   <div className="mb-6">
                     <h3 className="text-lg font-semibold mb-3 flex items-center">
                       <Clock size={20} className="mr-2" />
-                      Instructions
+                      {recipeDetails.steps ? 'Steps' : 'Instructions'}
                     </h3>
-                    <div className="text-gray-700 whitespace-pre-line">
-                      {recipeDetails.instructions}
+                    {recipeDetails.steps ? (
+                      <ol className="list-decimal list-inside space-y-2">
+                        {recipeDetails.steps.map((step, index) => (
+                          <li key={index} className="text-gray-700">{step}</li>
+                        ))}
+                      </ol>
+                    ) : (
+                      <div className="text-gray-700 whitespace-pre-line">
+                        {recipeDetails.instructions}
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Video Recipe Special Section */}
+                {recipeDetails.isVideoRecipe && (
+                  <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h3 className="text-lg font-semibold mb-3 flex items-center text-blue-800">
+                      <ChefHat size={20} className="mr-2" />
+                      Video Recipe Details
+                    </h3>
+                    <div className="space-y-2 text-blue-700">
+                      <p><strong>Difficulty:</strong> {recipeDetails.difficulty}</p>
+                      <p><strong>Time:</strong> {recipeDetails.time}</p>
+                      <p><strong>Rating:</strong> ⭐ {recipeDetails.rating}</p>
+                      <p className="mt-3 text-sm">
+                        This is a video recipe from our collection. The video tutorial will guide you through the cooking process step-by-step.
+                      </p>
                     </div>
                   </div>
                 )}
@@ -469,6 +768,189 @@ export default function Profile() {
           </div>
         </div>
       )}
+
+      {editModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
+            <button
+              className="absolute top-4 right-4 text-gray-500 hover:text-red-500 z-10"
+              onClick={closeEditModal}
+            >
+              <X size={24} />
+            </button>
+            <div className="p-6">
+              <h2 className="text-2xl font-bold mb-6">Edit Recipe</h2>
+              <form onSubmit={handleEditSubmit} className="space-y-6">
+                <div>
+                  <label htmlFor="editTitle" className="block text-sm font-medium text-gray-700 mb-2">
+                    Recipe Title
+                  </label>
+                  <input
+                    type="text"
+                    id="editTitle"
+                    name="title"
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500"
+                    placeholder="Enter recipe title"
+                    value={editForm.title}
+                    onChange={handleEditFormChange}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="editDescription" className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    id="editDescription"
+                    name="description"
+                    required
+                    rows="3"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500"
+                    placeholder="Describe your recipe"
+                    value={editForm.description}
+                    onChange={handleEditFormChange}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="editIngredients" className="block text-sm font-medium text-gray-700 mb-2">
+                    Ingredients (comma separated)
+                  </label>
+                  <textarea
+                    id="editIngredients"
+                    name="ingredients"
+                    required
+                    rows="4"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500"
+                    placeholder="e.g., 2 cups flour, 1 cup sugar, 3 eggs"
+                    value={editForm.ingredients}
+                    onChange={handleEditFormChange}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="editSteps" className="block text-sm font-medium text-gray-700 mb-2">
+                    Steps (comma separated)
+                  </label>
+                  <textarea
+                    id="editSteps"
+                    name="steps"
+                    required
+                    rows="4"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500"
+                    placeholder="e.g., Mix ingredients, Bake at 350F, Let cool"
+                    value={editForm.steps}
+                    onChange={handleEditFormChange}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Recipe Image
+                  </label>
+                  <div className="space-y-4">
+                    <div>
+                      <label htmlFor="editImageFile" className="block text-sm font-medium text-gray-700 mb-2">
+                        Upload New Image (Optional)
+                      </label>
+                      <input
+                        type="file"
+                        id="editImageFile"
+                        accept="image/*"
+                        onChange={handleEditFileChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Supported formats: JPG, PNG, GIF (Max 5MB)</p>
+                    </div>
+                    <div className="text-center text-gray-500">- OR -</div>
+                    <div>
+                      <label htmlFor="editImageUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                        Image URL (Alternative)
+                      </label>
+                      <input
+                        type="url"
+                        id="editImageUrl"
+                        name="image"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500"
+                        placeholder="https://example.com/image.jpg"
+                        value={editForm.image}
+                        onChange={handleEditFormChange}
+                        disabled={selectedFile !== null}
+                      />
+                    </div>
+                  </div>
+                  {(imagePreview || editForm.image) && (
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Image Preview
+                      </label>
+                      <div className="relative inline-block">
+                        <img
+                          src={imagePreview || editForm.image}
+                          alt="Recipe preview"
+                          className="w-32 h-32 object-cover rounded-md border"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'block';
+                          }}
+                        />
+                        <div className="hidden w-32 h-32 bg-gray-200 rounded-md border flex items-center justify-center">
+                          <span className="text-gray-500 text-sm">Image not available</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={removeEditImage}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="flex space-x-4">
+                  <button
+                    type="submit"
+                    disabled={editLoading}
+                    className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                  >
+                    {editLoading ? "Updating Recipe..." : "Update Recipe"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeEditModal}
+                    className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-sm w-full p-6 relative">
+            <h2 className="text-xl font-bold mb-4 text-center text-red-600">Delete Recipe</h2>
+            <p className="mb-6 text-center text-gray-700">Are you sure you want to delete this recipe? This action cannot be undone.</p>
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={confirmDeleteRecipe}
+                className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 font-semibold"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => { setDeleteModalOpen(false); setRecipeToDelete(null); }}
+                className="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400 font-semibold"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
     </div>
   );
 }

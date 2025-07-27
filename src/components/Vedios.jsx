@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Heart, Bookmark, Clock, User, PlayCircle, Play } from 'lucide-react';
 import { useRecipeContext } from '../hooks/useRecipeContext';
+import API from '../api';
 
 const videos = [
   {
@@ -241,6 +242,55 @@ export default function Vedios({id}) {
     setVideoModalTitle('');
   };
 
+  // Handle like button click with proper recipe data
+  const handleLikeClick = (e, video) => {
+    e.preventDefault();
+    e.stopPropagation(); // Prevent video from playing
+    const recipeData = {
+      id: `external_video_${video.id}`,
+      title: video.title,
+      category: video.category,
+      image: video.image,
+      cuisine: video.cuisine,
+      difficulty: video.difficulty,
+      time: video.time,
+      rating: video.rating,
+      source: 'Video Recipe',
+      description: `Video recipe: ${video.title} - ${video.category} cuisine`,
+      strCategory: video.category, // Add this for consistency with TheMealDB format
+      strArea: video.cuisine, // Add this for consistency with TheMealDB format
+      strMeal: video.title, // Add this for consistency with TheMealDB format
+      strMealThumb: video.image // Add this for consistency with TheMealDB format
+    };
+    console.log('Liking video recipe:', video.title, 'with data:', recipeData);
+    console.log('Video ID:', video.id, 'Recipe ID:', `external_video_${video.id}`);
+    toggleLike(`external_video_${video.id}`, recipeData);
+  };
+
+  // Handle bookmark button click with proper recipe data
+  const handleBookmarkClick = (e, video) => {
+    e.preventDefault();
+    e.stopPropagation(); // Prevent video from playing
+    const recipeData = {
+      id: `external_video_${video.id}`,
+      title: video.title,
+      category: video.category,
+      image: video.image,
+      cuisine: video.cuisine,
+      difficulty: video.difficulty,
+      time: video.time,
+      rating: video.rating,
+      source: 'Video Recipe',
+      description: `Video recipe: ${video.title} - ${video.category} cuisine`,
+      strCategory: video.category, // Add this for consistency with TheMealDB format
+      strArea: video.cuisine, // Add this for consistency with TheMealDB format
+      strMeal: video.title, // Add this for consistency with TheMealDB format
+      strMealThumb: video.image // Add this for consistency with TheMealDB format
+    };
+    console.log('Bookmarking video recipe:', video.title, 'with data:', recipeData);
+    toggleBookmark(`external_video_${video.id}`, recipeData);
+  };
+
   return (
     <div id={id} className="max-w-[90%] mx-auto px-4 py-12">
       {/* Explore All Recipes Button */}
@@ -268,45 +318,48 @@ export default function Vedios({id}) {
         {videosState.map((video) => (
           <div key={video.id} className="bg-white rounded-xl overflow-hidden duration-200">
             {/* Image Container */}
-            <div className="relative group cursor-pointer" onClick={() => handleOpenVideoModal(video.title)}>
-              <img
-                src={video.image}
-                alt={video.title}
-                className="w-full h-96 object-cover"
-              />
-              {/* Play Button Overlay */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="bg-white/30 rounded-full p-8 shadow-lg backdrop-blur-sm group-hover:scale-110 transition-transform">
-                  <Play className="w-10 h-10 text-white" fill="currentColor" />
-                </span>
-              </div>
-              {/* Top Overlay Icons */}
-              <div className="absolute top-3 left-3 flex items-center space-x-2">
-                <div className="bg-white bg-opacity-90 rounded-full px-2 py-1 flex items-center space-x-1">
-                  <span className="text-yellow-400 text-sm">★</span>
-                  <span className="text-xs font-medium text-gray-800">{video.rating}</span>
+            <div className="relative group">
+              <div className="cursor-pointer" onClick={() => handleOpenVideoModal(video.title)}>
+                <img
+                  src={video.image}
+                  alt={video.title}
+                  className="w-full h-96 object-cover"
+                />
+                {/* Play Button Overlay */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <span className="bg-white/30 rounded-full p-8 shadow-lg backdrop-blur-sm group-hover:scale-110 transition-transform">
+                    <Play className="w-10 h-10 text-white" fill="currentColor" />
+                  </span>
+                </div>
+                {/* Rating Badge */}
+                <div className="absolute top-3 left-3 flex items-center space-x-2 pointer-events-none">
+                  <div className="bg-white bg-opacity-90 rounded-full px-2 py-1 flex items-center space-x-1">
+                    <span className="text-yellow-400 text-sm">★</span>
+                    <span className="text-xs font-medium text-gray-800">{video.rating}</span>
+                  </div>
                 </div>
               </div>
-              <div className="absolute top-3 right-3 flex flex-col space-y-2">
+              {/* Like and Bookmark Buttons - Outside clickable area */}
+              <div className="absolute top-3 right-3 flex flex-col space-y-2 z-10">
                 <button
-                  onClick={() => toggleLike(`external_${video.id}`)}
+                  onClick={(e) => handleLikeClick(e, video)}
                   className={`p-2 rounded-full transition-colors duration-200 focus:outline-none ${
-                    isLiked(`external_${video.id}`)
+                    isLiked(`external_video_${video.id}`)
                       ? 'bg-red-500 text-white hover:cursor-pointer'
                       : 'bg-white text-red-500 hover:bg-gray-50 hover:cursor-pointer hover:bg-red-500 hover:text-white'
                   }`}
                 >
-                  <Heart size={22} fill={isLiked(`external_${video.id}`) ? 'currentColor' : 'none'} />
+                  <Heart size={22} fill={isLiked(`external_video_${video.id}`) ? 'currentColor' : 'none'} />
                 </button>
                 <button
-                  onClick={() => toggleBookmark(`external_${video.id}`)}
+                  onClick={(e) => handleBookmarkClick(e, video)}
                   className={`p-2 rounded-full transition-colors duration-200 focus:outline-none ${
-                    isBookmarked(`external_${video.id}`)
+                    isBookmarked(`external_video_${video.id}`)
                       ? 'bg-red-500 text-white hover:cursor-pointer'
                       : 'bg-white text-red-500 hover:bg-gray-50 hover:cursor-pointer hover:bg-red-500 hover:text-white'
                   }`}
                 >
-                  <Bookmark size={22} fill={isBookmarked(`external_${video.id}`) ? 'currentColor' : 'none'} />
+                  <Bookmark size={22} fill={isBookmarked(`external_video_${video.id}`) ? 'currentColor' : 'none'} />
                 </button>
               </div>
             </div>
@@ -317,7 +370,9 @@ export default function Vedios({id}) {
                 <span className="text-md font-bold text-red-500 tracking-wide">{video.category}</span>
               </div>
               {/* Title */}
-              <h3 className="text-xl font-bold text-black mb-3 leading-tight tracking-tight hover:text-red-500 hover:cursor-pointer">
+              <h3 className="text-xl font-bold text-black mb-3 leading-tight tracking-tight hover:text-red-500 hover:cursor-pointer"
+                onClick={() => handleOpenVideoModal(video.title)}
+              >
                 {video.title}
               </h3>
               {/* Meta Information */}
@@ -453,4 +508,4 @@ export default function Vedios({id}) {
       )}
     </div>
   );
-}
+} 

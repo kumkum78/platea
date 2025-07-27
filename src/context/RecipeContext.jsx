@@ -34,7 +34,61 @@ export const RecipeProvider = ({ children }) => {
     }
   };
 
-  const toggleLike = async (recipeId) => {
+  const toggleLike = async (recipeId, recipeData = null) => {
+    // Handle video recipes - store in backend but update UI immediately
+    if (recipeId.startsWith('external_video_')) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login to like recipes');
+        return;
+      }
+
+      // Check current state before updating UI
+      const isCurrentlyLiked = likedRecipes.has(recipeId);
+
+      // Update UI immediately for better UX
+      if (isCurrentlyLiked) {
+        // Unlike
+        setLikedRecipes(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(recipeId);
+          return newSet;
+        });
+      } else {
+        // Like
+        setLikedRecipes(prev => new Set([...prev, recipeId]));
+      }
+
+      // Also store in backend for persistence
+      try {
+        if (isCurrentlyLiked) {
+          // Unlike in backend
+          await API.delete(`/users/like/${recipeId}`);
+        } else {
+          // Like in backend
+          const requestData = recipeData ? { recipeData } : {};
+          console.log('Sending like request for video recipe:', recipeId);
+          console.log('Request data:', requestData);
+          console.log('Request URL:', `/users/like/${recipeId}`);
+          const response = await API.post(`/users/like/${recipeId}`, requestData);
+          console.log('Like response:', response.data);
+        }
+      } catch (error) {
+        console.error('Failed to sync like status with backend:', error);
+        // Revert UI state if backend call fails
+        if (isCurrentlyLiked) {
+          setLikedRecipes(prev => new Set([...prev, recipeId]));
+        } else {
+          setLikedRecipes(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(recipeId);
+            return newSet;
+          });
+        }
+      }
+      return;
+    }
+
     const token = localStorage.getItem('token');
     if (!token) {
       alert('Please login to like recipes');
@@ -42,6 +96,7 @@ export const RecipeProvider = ({ children }) => {
     }
 
     console.log('Toggling like for recipe:', recipeId);
+    console.log('Recipe data:', recipeData);
     console.log('Current token:', token);
 
     try {
@@ -58,7 +113,8 @@ export const RecipeProvider = ({ children }) => {
       } else {
         // Like
         console.log('Liking recipe:', recipeId);
-        const response = await API.post(`/users/like/${recipeId}`);
+        const requestData = recipeData ? { recipeData } : {};
+        const response = await API.post(`/users/like/${recipeId}`, requestData);
         console.log('Like response:', response);
         setLikedRecipes(prev => new Set([...prev, recipeId]));
       }
@@ -72,7 +128,59 @@ export const RecipeProvider = ({ children }) => {
     }
   };
 
-  const toggleBookmark = async (recipeId) => {
+  const toggleBookmark = async (recipeId, recipeData = null) => {
+    // Handle video recipes - store in backend but update UI immediately
+    if (recipeId.startsWith('external_video_')) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login to bookmark recipes');
+        return;
+      }
+
+      // Check current state before updating UI
+      const isCurrentlyBookmarked = bookmarkedRecipes.has(recipeId);
+
+      // Update UI immediately for better UX
+      if (isCurrentlyBookmarked) {
+        // Remove bookmark
+        setBookmarkedRecipes(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(recipeId);
+          return newSet;
+        });
+      } else {
+        // Add bookmark
+        setBookmarkedRecipes(prev => new Set([...prev, recipeId]));
+      }
+
+      // Also store in backend for persistence
+      try {
+        if (isCurrentlyBookmarked) {
+          // Remove bookmark in backend
+          await API.delete(`/users/bookmark/${recipeId}`);
+        } else {
+          // Add bookmark in backend
+          const requestData = recipeData ? { recipeData } : {};
+          console.log('Sending bookmark request for video recipe:', recipeId);
+          console.log('Request data:', requestData);
+          await API.post(`/users/bookmark/${recipeId}`, requestData);
+        }
+      } catch (error) {
+        console.error('Failed to sync bookmark status with backend:', error);
+        // Revert UI state if backend call fails
+        if (isCurrentlyBookmarked) {
+          setBookmarkedRecipes(prev => new Set([...prev, recipeId]));
+        } else {
+          setBookmarkedRecipes(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(recipeId);
+            return newSet;
+          });
+        }
+      }
+      return;
+    }
+
     const token = localStorage.getItem('token');
     if (!token) {
       alert('Please login to bookmark recipes');
@@ -80,6 +188,7 @@ export const RecipeProvider = ({ children }) => {
     }
 
     console.log('Toggling bookmark for recipe:', recipeId);
+    console.log('Recipe data:', recipeData);
     console.log('Current token:', token);
 
     try {
@@ -96,7 +205,8 @@ export const RecipeProvider = ({ children }) => {
       } else {
         // Add bookmark
         console.log('Bookmarking recipe:', recipeId);
-        const response = await API.post(`/users/bookmark/${recipeId}`);
+        const requestData = recipeData ? { recipeData } : {};
+        const response = await API.post(`/users/bookmark/${recipeId}`, requestData);
         console.log('Bookmark response:', response);
         setBookmarkedRecipes(prev => new Set([...prev, recipeId]));
       }

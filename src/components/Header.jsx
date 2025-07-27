@@ -19,6 +19,7 @@ const Navbar = ({
   onShowAZModal,
   onShowCategoryRecipes,
   onShowBlogArticle,
+  scrollToSection,
 }) => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
@@ -153,6 +154,17 @@ const Navbar = ({
     }
   };
 
+  const handleSmoothNav = (sectionId) => {
+    if (window.location.pathname === "/") {
+      scrollToSection && scrollToSection(sectionId);
+    } else {
+      navigate("/");
+      setTimeout(() => {
+        scrollToSection && scrollToSection(sectionId);
+      }, 300); // Wait for navigation
+    }
+  };
+
   return (
     <nav className="bg-white">
       {/* Top bar */}
@@ -242,17 +254,21 @@ const Navbar = ({
               </div>
               <span
                 className="text-gray-400 text-sm tracking-tighter hidden lg:inline hover:text-red-500 hover:cursor-pointer"
-                onClick={() => {
-                  navigate('/videos');
-                }}
+                onClick={() => handleSmoothNav('videos-section')}
               >
                 Video Recipes
               </span>
               <span
                 className="text-gray-400 text-sm tracking-tighter hidden lg:inline hover:text-red-500 hover:cursor-pointer"
-                onClick={() => setIsAZModalOpen(true)} // This will now work
+                onClick={() => setIsAZModalOpen(true)}
               >
                 A-Z Recipes
+              </span>
+              <span
+                className="text-gray-400 text-sm tracking-tighter hidden lg:inline hover:text-red-500 hover:cursor-pointer"
+                onClick={() => handleSmoothNav('discover-section')}
+              >
+                This Week's Recipes
               </span>
 
               {/* Add the modal */}
@@ -260,15 +276,6 @@ const Navbar = ({
                 isOpen={isAZModalOpen}
                 onClose={() => setIsAZModalOpen(false)}
               />
-
-              <span
-                className="text-gray-400 text-sm tracking-tighter hidden lg:inline hover:text-red-500 hover:cursor-pointer"
-                onClick={() => {
-                  navigate('/discover');
-                }}
-              >
-                This Week's Recipes
-              </span>
 
               <span
                 className="text-gray-400 text-sm tracking-tighter hidden lg:inline hover:text-red-500 hover:cursor-pointer"
@@ -468,13 +475,18 @@ const Navbar = ({
               <div className="hidden lg:block pt-2">
                 <div className="flex items-center space-x-8">
                   <div className="relative">
-                    <Link
-                      to="/"
+                    <button
+                      onClick={() => {
+                        navigate('/');
+                        // Smooth scroll to top after navigation
+                        setTimeout(() => {
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }, 100);
+                      }}
                       className="text-gray-800 hover:text-red-500 hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
                     >
                       Home
-                      {/* <ChevronDown size={14} className="ml-1 mt-1" /> */}
-                    </Link>
+                    </button>
                     {/* {activeDropdown === "home" && (
                       <div className="absolute z-50 mt-1 w-48 bg-white rounded-md shadow-lg border py-1">
                         <a
@@ -1075,12 +1087,18 @@ const Navbar = ({
           <div className="px-3 sm:px-4 pt-2 pb-3 space-y-1 bg-white">
             {/* Mobile/Tablet navigation with dropdowns */}
             <div className="space-y-1">
-              <Link
-                to="/"
+              <button
+                onClick={() => {
+                  navigate('/');
+                  // Smooth scroll to top after navigation
+                  setTimeout(() => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }, 100);
+                }}
                 className="w-full text-left text-gray-800 hover:text-red-500 flex items-center justify-between px-2 sm:px-3 py-2 text-sm font-medium"
               >
                 Home
-              </Link>
+              </button>
             </div>
 
             <div className="space-y-1">

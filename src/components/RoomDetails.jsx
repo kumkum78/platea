@@ -31,6 +31,7 @@ export default function RoomDetails() {
     image: ""
   });
   const [socket, setSocket] = useState(null);
+  const [copiedField, setCopiedField] = useState(null);
   const today = getToday();
 
   useEffect(() => {
@@ -122,9 +123,11 @@ export default function RoomDetails() {
     }
   };
 
-  const copyToClipboard = (text) => {
+  const copyToClipboard = (text, field) => {
     navigator.clipboard.writeText(text);
+    setCopiedField(field);
     setMessage("Copied to clipboard!");
+    setTimeout(() => setCopiedField(null), 1200);
   };
 
   const fetchInvites = async () => {
@@ -367,10 +370,12 @@ export default function RoomDetails() {
                     className="border rounded px-3 py-2 flex-1 bg-gray-50"
                   />
                   <button
-                    onClick={() => copyToClipboard(inviteCode)}
-                    className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 flex items-center"
+                    onClick={() => copyToClipboard(inviteCode, 'code')}
+                    className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 flex items-center cursor-pointer"
+                    title="Copy code"
                   >
                     <Copy size={16} />
+                    {copiedField === 'code' && <span className="ml-2 text-xs text-white">Copied!</span>}
                   </button>
                 </div>
               </div>
@@ -387,10 +392,12 @@ export default function RoomDetails() {
                     className="border rounded px-3 py-2 flex-1 bg-gray-50 text-sm"
                   />
                   <button
-                    onClick={() => copyToClipboard(inviteUrl)}
-                    className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 flex items-center"
+                    onClick={() => copyToClipboard(inviteUrl, 'link')}
+                    className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 flex items-center cursor-pointer"
+                    title="Copy link"
                   >
                     <Copy size={16} />
+                    {copiedField === 'link' && <span className="ml-2 text-xs text-white">Copied!</span>}
                   </button>
                 </div>
               </div>

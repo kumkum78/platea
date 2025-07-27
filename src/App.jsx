@@ -8,6 +8,8 @@ import ContactModal from "./components/ContactModal";
 import Discover from "./components/Discover";
 import NewRecipe from "./components/NewRecipe";
 import Vedios from "./components/Vedios";
+import VideoRecipesPage from "./components/VideoRecipesPage";
+import DiscoverPage from "./components/DiscoverPage";
 import OurJournal from "./components/OurJournal";
 import AZRecipesModal from "./components/AZRecipesModal";
 import CategoryRecipesModal from "./components/CategoryRecipesModal";
@@ -88,6 +90,9 @@ export default function App() {
     error: "",
   });
   const [showContactModal, setShowContactModal] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const openLogin = () => setIsLoginOpen(true);
+  const closeLogin = () => setIsLoginOpen(false);
 
   const handleShowAZModal = () => {
     setShowAZModal(true);
@@ -195,6 +200,7 @@ export default function App() {
         onShowAZModal={handleShowAZModal}
         onShowCategoryRecipes={handleShowCategoryRecipes}
         onShowBlogArticle={handleShowBlogArticle}
+        scrollToSection={scrollToSection}
       />
       <main>
           <Routes>
@@ -213,13 +219,13 @@ export default function App() {
               }
             />
             <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={<Login isOpen={isLoginOpen} onClose={closeLogin} />} />
             <Route path="/recipes" element={<Recipes />} />
             <Route path="/add-recipe" element={<AddRecipe />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile" element={<Profile onShowLogin={openLogin} />} />
             <Route path="/ai-suggest" element={<AiSuggest />} />
-            <Route path="/videos" element={<Vedios />} />
-            <Route path="/discover" element={<Discover />} />
+            <Route path="/videos" element={<VideoRecipesPage />} />
+            <Route path="/discover" element={<DiscoverPage />} />
             <Route path="/rooms" element={<Rooms />} />
             <Route path="/rooms/:roomId" element={<RoomDetails />} />
           </Routes>
@@ -229,10 +235,8 @@ export default function App() {
         onShowContactModal={handleShowContactModal}
         scrollToSection={scrollToSection}
       />
-      
       {/* Modals */}
       <AZRecipesModal isOpen={showAZModal} onClose={handleCloseAZModal} />
-      
       {showCategoryModal && (
         <CategoryRecipesModal 
           title={categoryData.title}
@@ -255,6 +259,8 @@ export default function App() {
             onClose={handleCloseContactModal}
           />
       )}
+      {/* Global Login Modal */}
+      <Login isOpen={isLoginOpen} onClose={closeLogin} />
     </div>
         </RecipeProvider>
       </AuthProvider>

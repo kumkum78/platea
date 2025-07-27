@@ -140,18 +140,18 @@ export default function Footer({ onShowAZModal, onShowContactModal, scrollToSect
   };
 
   return (
-    <footer className="bg-gray-100 pt-8 pb-0 lg:pt-22">
+    <footer className="bg-gray-100 pt-8 pb-0 lg:pt-14">
       {/* Popular Tags Section */}
       <div className="max-w-5xl mx-auto text-center mb-12 px-4 sm:px-6 lg:px-0 lg:mb-20">
         <h2 className="text-3xl sm:text-3xl lg:text-5xl font-semibold mb-3 lg:mb-4 text-black">Explore Popular Tags</h2>
         <p className="text-gray-500 text-semibold text-md mb-6 lg:mb-10 tracking-tight">From quick meals to healthy dishes, our popular tags make it easy to explore delicious options with one click.</p>
-        <div className="flex flex-wrap justify-center gap-x-2 sm:gap-x-3 lg:gap-x-4 gap-y-2 mb-4 cursor-pointer ">
+        <div className="flex flex-wrap justify-center gap-x-2 sm:gap-x-3 lg:gap-x-4 gap-y-2 mb-4">
           {tags.map(tag => {
             if (tag === 'VIDEO RECIPE') {
               return (
                 <button
                   key={tag}
-                  className="bg-white text-xs sm:text-sm lg:text-sm tracking-tighter text-black font-bold rounded-full px-3 sm:px-4 lg:px-4 py-2 lg:py-[10px] mb-2 inline-block whitespace-nowrap hover:bg-red-500 hover:text-white focus:outline-none"
+                  className="bg-white text-xs sm:text-sm lg:text-sm tracking-tighter text-black font-bold rounded-full px-3 sm:px-4 lg:px-4 py-2 lg:py-[10px] mb-2 inline-block whitespace-nowrap hover:bg-red-500 hover:text-white focus:outline-none cursor-pointer"
                   onClick={() => scrollToSection && scrollToSection('videos-section')}
                 >
                   {tag}
@@ -161,7 +161,7 @@ export default function Footer({ onShowAZModal, onShowContactModal, scrollToSect
             return (
               <button
                 key={tag}
-                className="bg-white text-xs sm:text-sm lg:text-sm tracking-tighter text-black font-bold rounded-full px-3 sm:px-4 lg:px-4 py-2 lg:py-[10px] mb-2 inline-block whitespace-nowrap hover:bg-red-500 hover:text-white focus:outline-none"
+                className="bg-white text-xs sm:text-sm lg:text-sm tracking-tighter text-black font-bold rounded-full px-3 sm:px-4 lg:px-4 py-2 lg:py-[10px] mb-2 inline-block whitespace-nowrap hover:bg-red-500 hover:text-white focus:outline-none cursor-pointer"
                 onClick={() => handleTagClick(tag)}
               >
               {tag}

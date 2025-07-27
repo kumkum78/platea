@@ -30,6 +30,11 @@ export default function Recipes() {
   const fetchRecipes = async () => {
     try {
       const response = await API.get("/recipes");
+      console.log("Fetched recipes:", response.data);
+      // Debug: Check image URLs
+      response.data.forEach(recipe => {
+        console.log(`Recipe "${recipe.title}" image:`, recipe.image);
+      });
       setRecipes(response.data);
     } catch {
       setError("Failed to fetch recipes");
@@ -107,12 +112,35 @@ export default function Recipes() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recipes.map((recipe) => (
               <div key={recipe._id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                {recipe.image && (
+                {recipe.image ? (
                   <img
-                    src={recipe.image}
+                    src={recipe.image.startsWith('http') ? recipe.image : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${recipe.image}`}
                     alt={recipe.title}
                     className="w-full h-48 object-cover"
+                    onError={(e) => {
+                      console.log('Recipe image failed to load:', recipe.image);
+                      // Try to use a fallback image from the public images
+                      const fallbackImages = [
+                        '/images/recipe-2-550x690.jpg',
+                        '/images/recipe-6-630x785.jpg',
+                        '/images/recipe-18-630x785.jpg',
+                        '/images/recipe-20-630x785.jpg'
+                      ];
+                      const randomFallback = fallbackImages[Math.floor(Math.random() * fallbackImages.length)];
+                      e.target.src = randomFallback;
+                      e.target.onerror = null; // Prevent infinite loop
+                    }}
+                    onLoad={() => {
+                      console.log('Recipe image loaded successfully:', recipe.image);
+                    }}
                   />
+                ) : (
+                  <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                    <div className="text-center">
+                      <span className="text-4xl text-gray-400">🍴</span>
+                      <p className="text-gray-500 mt-2 text-sm">No image available</p>
+                    </div>
+                  </div>
                 )}
                 <div className="p-6">
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">

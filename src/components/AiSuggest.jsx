@@ -13,6 +13,20 @@ export default function AiSuggest() {
     "Moroccan", "Korean", "Vietnamese", "Lebanese"
   ];
 
+  const getSuggestions = async (selectedCuisine) => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await API.post("/ai/suggest", { cuisine: selectedCuisine });
+      setDishes(response.data.dishes);
+    } catch {
+      setError("Failed to get suggestions. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!cuisine) {
@@ -20,18 +34,12 @@ export default function AiSuggest() {
       return;
     }
 
-    setLoading(true);
-    setError("");
     setDishes([]);
+    await getSuggestions(cuisine);
+  };
 
-    try {
-      const response = await API.post("/ai/suggest", { cuisine });
-      setDishes(response.data.dishes);
-    } catch {
-      setError("Failed to get suggestions. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+  const handleNewSuggestions = async () => {
+    await getSuggestions(cuisine);
   };
 
   return (
@@ -78,9 +86,18 @@ export default function AiSuggest() {
 
           {dishes.length > 0 && (
             <div className="text-center">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                🍽️ {cuisine} Dish Suggestions
-              </h2>
+              <div className="flex justify-center items-center gap-4 mb-6">
+                <h2 className="text-2xl font-semibold text-gray-900">
+                  🍽️ {cuisine} Dish Suggestions
+                </h2>
+                <button
+                  onClick={handleNewSuggestions}
+                  disabled={loading}
+                  className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-sm"
+                >
+                  {loading ? "Loading..." : "🔄 New Suggestions"}
+                </button>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {dishes.map((dish, index) => (
                   <div
