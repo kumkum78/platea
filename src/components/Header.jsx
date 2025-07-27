@@ -8,17 +8,20 @@ import {
   User,
   Plus,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Login from "./Login";
 import AZRecipesModal from "./AZRecipesModal";
 import ContactModal from "./ContactModal";
 import SearchModal from "./SearchModal";
+import { useAuth } from "../hooks/useAuth";
 
 const Navbar = ({
   onShowAZModal,
   onShowCategoryRecipes,
   onShowBlogArticle,
 }) => {
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -28,6 +31,7 @@ const Navbar = ({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [recipeTitle, setRecipeTitle] = useState("");
   const [recipeDescription, setRecipeDescription] = useState("");
   const [recipeIngredients, setRecipeIngredients] = useState([""]);
@@ -110,11 +114,7 @@ const Navbar = ({
     setIsCategoriesOpen(false);
     switch (category) {
       case "videos": {
-        // Scroll to videos section
-        const videosSection = document.getElementById("videos-section");
-        if (videosSection) {
-          videosSection.scrollIntoView({ behavior: "smooth" });
-        }
+        navigate('/videos');
         break;
       }
       case "az-recipes": {
@@ -123,11 +123,7 @@ const Navbar = ({
         break;
       }
       case "this-week": {
-        // Scroll to discover section
-        const discoverSection = document.getElementById("discover-section");
-        if (discoverSection) {
-          discoverSection.scrollIntoView({ behavior: "smooth" });
-        }
+        navigate('/discover');
         break;
       }
       case "popular": {
@@ -185,10 +181,7 @@ const Navbar = ({
                       <button
                         onClick={() => {
                           setIsCategoriesOpen(false);
-                          const videosSection = document.getElementById("videos-section");
-                          if (videosSection) {
-                            videosSection.scrollIntoView({ behavior: "smooth" });
-                          }
+                          navigate('/videos');
                         }}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
                       >
@@ -203,10 +196,7 @@ const Navbar = ({
                       <button
                         onClick={() => {
                           setIsCategoriesOpen(false);
-                          const discoverSection = document.getElementById("discover-section");
-                          if (discoverSection) {
-                            discoverSection.scrollIntoView({ behavior: "smooth" });
-                          }
+                          navigate('/discover');
                         }}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500"
                       >
@@ -253,10 +243,7 @@ const Navbar = ({
               <span
                 className="text-gray-400 text-sm tracking-tighter hidden lg:inline hover:text-red-500 hover:cursor-pointer"
                 onClick={() => {
-                  const videosSection = document.getElementById("videos-section");
-                  if (videosSection) {
-                    videosSection.scrollIntoView({ behavior: "smooth" });
-                  }
+                  navigate('/videos');
                 }}
               >
                 Video Recipes
@@ -277,10 +264,7 @@ const Navbar = ({
               <span
                 className="text-gray-400 text-sm tracking-tighter hidden lg:inline hover:text-red-500 hover:cursor-pointer"
                 onClick={() => {
-                  const discoverSection = document.getElementById("discover-section");
-                  if (discoverSection) {
-                    discoverSection.scrollIntoView({ behavior: "smooth" });
-                  }
+                  navigate('/discover');
                 }}
               >
                 This Week's Recipes
@@ -322,10 +306,7 @@ const Navbar = ({
                     <button
                       onClick={() => {
                         setIsCategoriesOpen(false);
-                        const videosSection = document.getElementById("videos-section");
-                        if (videosSection) {
-                          videosSection.scrollIntoView({ behavior: "smooth" });
-                        }
+                        navigate('/videos');
                       }}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500 w-full text-left"
                     >
@@ -340,10 +321,7 @@ const Navbar = ({
                     <button
                       onClick={() => {
                         setIsCategoriesOpen(false);
-                        const discoverSection = document.getElementById("discover-section");
-                        if (discoverSection) {
-                          discoverSection.scrollIntoView({ behavior: "smooth" });
-                        }
+                        navigate('/discover');
                       }}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500 w-full text-left"
                     >
@@ -384,6 +362,15 @@ const Navbar = ({
               </div>
               {/* <span className='text-gray-400 font-semibold text-xs tracking-tighter'>Contact</span> */}
             </div>
+
+            {/* Welcome message for logged in users */}
+            {isAuthenticated && (
+              <div className="hidden md:flex items-center">
+                <span className="text-green-600 font-medium text-sm">
+                  Welcome back, {user?.name?.split(' ')[0] || 'User'}! 👋
+                </span>
+              </div>
+            )}
 
             <div className="hidden md:flex items-center space-x-7">
               {/* Instagram */}
@@ -473,7 +460,7 @@ const Navbar = ({
                   </svg>
                 </div>
                 <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-red-500">
-                  Platea
+                  Recipedia
                 </span>
               </div>
 
@@ -534,12 +521,27 @@ const Navbar = ({
 
                   {/* Rooms */}
                   <div className="relative">
-                    <Link
-                      to="/rooms"
-                      className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
-                    >
-                      Rooms
-                    </Link>
+                    {isAuthenticated ? (
+                      <Link
+                        to="/rooms"
+                        className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
+                      >
+                        Rooms
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setShowLoginPrompt(true);
+                          setTimeout(() => {
+                            setShowLoginPrompt(false);
+                            openLogin();
+                          }, 2000);
+                        }}
+                        className="text-gray-800 hover:text-red-500  hover:cursor-pointer text-lg tracking-tighter font-semibold flex items-center py-2"
+                      >
+                        Rooms
+                      </button>
+                    )}
                   </div>
 
                   {/* Cuisines */}
@@ -947,24 +949,7 @@ const Navbar = ({
                   {/* <Link to="/login" className="text-gray-800 hover:text-red-500 text-lg font-semibold">
                     Login
                   </Link> */}
-                  <Link
-                    to="/recipes"
-                    className="text-gray-800 hover:text-red-500 text-lg font-semibold"
-                  >
-                    Recipes
-                  </Link>
-                  <Link
-                    to="/add-recipe"
-                    className="text-gray-800 hover:text-red-500 text-lg font-semibold"
-                  >
-                    Add Recipe
-                  </Link>
-                  <Link
-                    to="/profile"
-                    className="text-gray-800 hover:text-red-500 text-lg font-semibold"
-                  >
-                    Profile
-                  </Link>
+
                   <Link
                     to="/ai-suggest"
                     className="text-gray-800 hover:text-red-500 text-lg font-semibold"
@@ -977,56 +962,74 @@ const Navbar = ({
 
                           {/* Right side actions */}
             <div className="hidden lg:flex items-center space-x-4">
-              <Link to="/recipes" className="text-gray-800 hover:text-red-500 text-sm font-medium">
-                Recipes
-              </Link>
-              <Link to="/ai-suggest" className="text-gray-800 hover:text-red-500 text-sm font-medium">
-                AI Suggest
-              </Link>
-              <Link to="/profile" className="text-gray-800 hover:text-red-500 text-sm font-medium">
-                Profile
-              </Link>
-              <button className="text-black hover:text-red-500 hover:cursor-pointer p-1">
-                <Bookmark size={20} />
-              </button>
-              <button
-                className="text-black hover:text-red-500 hover:cursor-pointer p-1"
-                onClick={openLogin}
-              >
-                <User size={20} />
-              </button>
               <button
                 className="text-black hover:text-red-500 hover:cursor-pointer p-1"
                 onClick={openSearch}
               >
                 <Search size={20} />
               </button>
-              <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
+              {isAuthenticated ? (
+                <Link
+                  to="/profile"
+                  className="text-black hover:text-red-500 hover:cursor-pointer p-1"
+                >
+                  <User size={20} />
+                </Link>
+              ) : (
+                <button
+                  className="text-black hover:text-red-500 hover:cursor-pointer p-1"
+                  onClick={openLogin}
+                >
+                  <User size={20} />
+                </button>
+              )}
               <Link
                 to="/add-recipe"
                 className="bg-gray-200 hover:bg-red-500 hover:text-white text-black px-4.5 py-2.5 font-semibold tracking-tighter rounded-md text-sm font-medium hover:cursor-pointer"
               >
                 Add Recipe
               </Link>
+              <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
             </div>
             
             {/* Login Modal */}
             <Login isOpen={isLoginOpen} onClose={closeLogin} />
+
+            {/* Custom Login Prompt */}
+            {showLoginPrompt && (
+              <div className="fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out">
+                <div className="flex items-center space-x-2">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  <span className="font-medium">Please login to access room facilities</span>
+                </div>
+              </div>
+            )}
 
             {/* Medium screen actions (tablet) */}
             <div className="hidden md:flex lg:hidden items-center space-x-2 sm:space-x-3">
               <button className="text-black hover:text-red-500 p-1">
                 <Search size={18} />
               </button>
-              <button 
-                className="text-black hover:text-red-500 p-1"
-                onClick={openLogin}
-              >
-                <User size={18} />
-              </button>
-              <button className="bg-gray-200 hover:bg-red-500 hover:text-white text-black px-2 sm:px-3 py-1.5 sm:py-2 font-semibold tracking-tighter rounded-md text-xs sm:text-sm font-medium">
+              {isAuthenticated ? (
+                <Link 
+                  to="/profile"
+                  className="text-black hover:text-red-500 p-1"
+                >
+                  <User size={18} />
+                </Link>
+              ) : (
+                <button 
+                  className="text-black hover:text-red-500 p-1"
+                  onClick={openLogin}
+                >
+                  <User size={18} />
+                </button>
+              )}
+              <Link to="/add-recipe" className="bg-gray-200 hover:bg-red-500 hover:text-white text-black px-2 sm:px-3 py-1.5 sm:py-2 font-semibold tracking-tighter rounded-md text-xs sm:text-sm font-medium">
                 Add Recipe
-              </button>
+              </Link>
               <button
                 onClick={toggleMenu}
                 className="text-gray-600 hover:text-red-500 p-1.5 sm:p-2"
@@ -1040,12 +1043,21 @@ const Navbar = ({
               <button className="text-black hover:text-red-500 p-1">
                 <Search size={16} />
               </button>
-              <button 
-                className="text-black hover:text-red-500 p-1"
-                onClick={openLogin}
-              >
-                <User size={16} />
-              </button>
+              {isAuthenticated ? (
+                <Link 
+                  to="/profile"
+                  className="text-black hover:text-red-500 p-1"
+                >
+                  <User size={16} />
+                </Link>
+              ) : (
+                <button 
+                  className="text-black hover:text-red-500 p-1"
+                  onClick={openLogin}
+                >
+                  <User size={16} />
+                </button>
+              )}
               <button
                 onClick={toggleMenu}
                 className="text-gray-600 hover:text-red-500 p-1.5"
@@ -1080,12 +1092,27 @@ const Navbar = ({
               </Link>
             </div>
             <div className="space-y-1">
-              <Link
-                to="/rooms"
-                className="w-full text-left text-gray-800 hover:text-red-500 flex items-center justify-between px-2 sm:px-3 py-2 text-sm font-medium"
-              >
-                Rooms
-              </Link>
+              {isAuthenticated ? (
+                <Link
+                  to="/rooms"
+                  className="w-full text-left text-gray-800 hover:text-red-500 flex items-center justify-between px-2 sm:px-3 py-2 text-sm font-medium"
+                >
+                  Rooms
+                </Link>
+              ) : (
+                                  <button
+                    onClick={() => {
+                      setShowLoginPrompt(true);
+                      setTimeout(() => {
+                        setShowLoginPrompt(false);
+                        openLogin();
+                      }, 2000);
+                    }}
+                    className="w-full text-left text-gray-800 hover:text-red-500 flex items-center justify-between px-2 sm:px-3 py-2 text-sm font-medium"
+                  >
+                    Rooms
+                  </button>
+              )}
             </div>
 
             <div className="space-y-1">
@@ -1219,23 +1246,32 @@ const Navbar = ({
               <Link to="/ai-suggest" className="block w-full text-gray-700 hover:text-red-500 px-3 py-2 text-sm font-medium">
                 AI Suggest
               </Link>
-              <Link to="/profile" className="block w-full text-gray-700 hover:text-red-500 px-3 py-2 text-sm font-medium">
-                Profile
-              </Link>
-              {/* REMOVE Register and Login links from mobile nav */}
-              {/* <Link to="/register" className="block w-full text-gray-700 hover:text-red-500 px-3 py-2 text-sm font-medium">
-                Register
-              </Link> */}
-              {/* <Link to="/login" className="block w-full text-gray-700 hover:text-red-500 px-3 py-2 text-sm font-medium">
-                Login
-              </Link> */}
+              {isAuthenticated ? (
+                <>
+                  <Link to="/profile" className="block w-full text-gray-700 hover:text-red-500 px-3 py-2 text-sm font-medium">
+                    Profile
+                  </Link>
+                  <Link to="/rooms" className="block w-full text-gray-700 hover:text-red-500 px-3 py-2 text-sm font-medium">
+                    My Rooms
+                  </Link>
+                  <button 
+                    onClick={logout}
+                    className="block w-full text-left text-gray-700 hover:text-red-500 px-3 py-2 text-sm font-medium"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <button 
+                  onClick={openLogin}
+                  className="block w-full text-left text-gray-700 hover:text-red-500 px-3 py-2 text-sm font-medium"
+                >
+                  Login / Register
+                </button>
+              )}
             </div>
             
-            <div className="px-3 py-2 md:hidden">
-              <Link to="/add-recipe" className="block w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded text-sm font-medium text-center">
-                Add Recipe
-              </Link>
-            </div>
+
 
             {/* Social media icons for mobile */}
             <div className="flex md:hidden items-center justify-center space-x-6 px-3 py-3 border-t border-gray-100 mt-3">

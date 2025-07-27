@@ -272,10 +272,10 @@ export default function Footer({ onShowAZModal, onShowContactModal, scrollToSect
           {/* Copyright and Logo */}
           <div className="w-full border-t border-gray-200 mt-6 pt-7 text-center">
             <p className="text-gray-600 mb-4 text-md tracking-tighter lg:text-md text-semibold">
-              Platea offers a world of delicious recipes, cooking inspiration, and culinary tips. Explore new flavors, master techniques, and bring your passion for cooking to life.
+              Recipedia offers a world of delicious recipes, cooking inspiration, and culinary tips. Explore new flavors, master techniques, and bring your passion for cooking to life.
             </p>
             <p className="text-black text-semibold tracking-tighter text-md lg:text-md mb-4">
-              © 2025 Platea. All rights reserved. Designed by <a href="#" className="hover:text-red-500">Gloria Themes</a>.
+              © 2025 Recipedia. All rights reserved. Designed by <a href="#" className="hover:text-red-500">Kumkum Motwani</a>.
             </p>
             <div className="flex justify-center items-center mt-2">
               <div className="w-6 h-6 sm:w-6 sm:h-6 md:w-6 md:h-6 bg-red-500 rounded-md flex items-center justify-center mr-2">
@@ -287,7 +287,7 @@ export default function Footer({ onShowAZModal, onShowContactModal, scrollToSect
                   <path d="M8.1 13.34l2.83-2.83L3.91 3.5c-1.56 1.56-1.56 4.09 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.2-1.1-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z" />
                 </svg>
                 </div>
-              <span className="text-base lg:text-lg font-bold text-red-500 hover:cursor-pointer">Platea</span>
+              <span className="text-base lg:text-lg font-bold text-red-500 hover:cursor-pointer">Recipedia</span>
             </div>
           </div>
         </div>
@@ -313,7 +313,7 @@ export default function Footer({ onShowAZModal, onShowContactModal, scrollToSect
                 </div>
               ) : (
                 <div className="text-gray-700 text-sm space-y-3">
-                  <p>By using Platea, you agree to the following terms and conditions:</p>
+                  <p>By using Recipedia, you agree to the following terms and conditions:</p>
                   <ul className="list-disc list-inside ml-4">
                     <li>All content is for personal, non-commercial use only.</li>
                     <li>Do not redistribute or republish content without permission.</li>

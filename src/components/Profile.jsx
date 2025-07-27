@@ -2,18 +2,21 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
 import { useRecipeContext } from "../hooks/useRecipeContext";
-import { X, Clock, ChefHat, Trash2 } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+import { X, Clock, ChefHat, Trash2, Heart, Bookmark } from "lucide-react";
 
 export default function Profile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const { loadUserPreferences } = useRecipeContext();
+  const { logout } = useAuth();
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const [recipeModalOpen, setRecipeModalOpen] = useState(false);
   const [recipeDetails, setRecipeDetails] = useState(null);
   const [recipeLoading, setRecipeLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     fetchProfile();
@@ -21,11 +24,18 @@ export default function Profile() {
 
   const fetchProfile = async () => {
     try {
-      const response = await API.get("/users/profile");
+      // Add timestamp to prevent caching
+      const response = await API.get("/users/profile", {
+        params: { _t: Date.now() }
+      });
+      console.log("Profile data received:", response.data);
+      console.log("Uploaded recipes:", response.data.uploadedRecipes);
+      console.log("Uploaded recipes length:", response.data.uploadedRecipes ? response.data.uploadedRecipes.length : 0);
       setProfile(response.data);
       // Refresh user preferences after loading profile
       loadUserPreferences();
-    } catch {
+    } catch (error) {
+      console.error("Profile fetch error:", error);
       setError("Failed to fetch profile. Please login first.");
     } finally {
       setLoading(false);
@@ -33,8 +43,8 @@ export default function Profile() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
+    logout();
+    navigate("/");
   };
 
   const handleRecipeClick = async (recipe) => {
@@ -96,11 +106,47 @@ export default function Profile() {
 
     try {
       await API.delete(`/recipes/${recipeId}`);
+      setSuccessMessage("Recipe deleted successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
       // Refresh profile to update the uploaded recipes list
       fetchProfile();
     } catch (error) {
       console.error("Failed to delete recipe:", error);
       alert(error.response?.data?.message || "Failed to delete recipe");
+    }
+  };
+
+  const handleUnlikeRecipe = async (recipeId, e) => {
+    e.stopPropagation(); // Prevent opening the recipe modal
+    if (!window.confirm('Are you sure you want to unlike this recipe?')) {
+      return;
+    }
+    try {
+      await API.delete(`/users/like/${recipeId}`);
+      setSuccessMessage("Recipe unliked successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+      // Refresh profile to update the liked recipes list
+      fetchProfile();
+    } catch (error) {
+      console.error("Failed to unlike recipe:", error);
+      alert(error.response?.data?.message || "Failed to unlike recipe");
+    }
+  };
+
+  const handleUnbookmarkRecipe = async (recipeId, e) => {
+    e.stopPropagation(); // Prevent opening the recipe modal
+    if (!window.confirm('Are you sure you want to remove this recipe from bookmarks?')) {
+      return;
+    }
+    try {
+      await API.delete(`/users/bookmark/${recipeId}`);
+      setSuccessMessage("Recipe removed from bookmarks successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+      // Refresh profile to update the bookmarked recipes list
+      fetchProfile();
+    } catch (error) {
+      console.error("Failed to unbookmark recipe:", error);
+      alert(error.response?.data?.message || "Failed to unbookmark recipe");
     }
   };
 
@@ -141,6 +187,13 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Success Message */}
+        {successMessage && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            {successMessage}
+          </div>
+        )}
+
         {/* Profile Header */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
           <div className="flex justify-between items-center">
@@ -170,21 +223,33 @@ export default function Profile() {
                     className="border-b pb-3 last:border-b-0 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
                     onClick={() => handleRecipeClick(recipe)}
                   >
-                    <div className="flex items-start space-x-3">
-                      {recipe.image && (
-                        <img 
-                          src={recipe.image} 
-                          alt={recipe.title} 
-                          className="w-12 h-12 object-cover rounded-md"
-                        />
-                      )}
-                      <div className="flex-1">
-                        <h3 className="font-medium text-gray-900">{recipe.title}</h3>
-                        <p className="text-sm text-gray-600">{recipe.description}</p>
-                        {recipe.category && (
-                          <p className="text-xs text-red-500 mt-1">{recipe.category}</p>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start space-x-3 flex-1">
+                        {recipe.image && (
+                          <img 
+                            src={recipe.image} 
+                            alt={recipe.title} 
+                            className="w-12 h-12 object-cover rounded-md"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
                         )}
+                        <div className="flex-1">
+                          <h3 className="font-medium text-gray-900">{recipe.title}</h3>
+                          <p className="text-sm text-gray-600">{recipe.description}</p>
+                          {recipe.category && (
+                            <p className="text-xs text-red-500 mt-1">{recipe.category}</p>
+                          )}
+                        </div>
                       </div>
+                      <button
+                        onClick={(e) => handleUnlikeRecipe(recipe._id, e)}
+                        className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors ml-2"
+                        title="Unlike recipe"
+                      >
+                        <Heart size={16} fill="currentColor" />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -205,21 +270,33 @@ export default function Profile() {
                     className="border-b pb-3 last:border-b-0 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
                     onClick={() => handleRecipeClick(recipe)}
                   >
-                    <div className="flex items-start space-x-3">
-                      {recipe.image && (
-                        <img 
-                          src={recipe.image} 
-                          alt={recipe.title} 
-                          className="w-12 h-12 object-cover rounded-md"
-                        />
-                      )}
-                      <div className="flex-1">
-                        <h3 className="font-medium text-gray-900">{recipe.title}</h3>
-                        <p className="text-sm text-gray-600">{recipe.description}</p>
-                        {recipe.category && (
-                          <p className="text-xs text-red-500 mt-1">{recipe.category}</p>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start space-x-3 flex-1">
+                        {recipe.image && (
+                          <img 
+                            src={recipe.image} 
+                            alt={recipe.title} 
+                            className="w-12 h-12 object-cover rounded-md"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
                         )}
+                        <div className="flex-1">
+                          <h3 className="font-medium text-gray-900">{recipe.title}</h3>
+                          <p className="text-sm text-gray-600">{recipe.description}</p>
+                          {recipe.category && (
+                            <p className="text-xs text-red-500 mt-1">{recipe.category}</p>
+                          )}
+                        </div>
                       </div>
+                      <button
+                        onClick={(e) => handleUnbookmarkRecipe(recipe._id, e)}
+                        className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors ml-2"
+                        title="Remove bookmark"
+                      >
+                        <Bookmark size={16} fill="currentColor" />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -234,15 +311,38 @@ export default function Profile() {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">📝 My Recipes</h2>
             {profile.uploadedRecipes && profile.uploadedRecipes.length > 0 ? (
               <div className="space-y-3">
+                {console.log("Rendering uploaded recipes:", profile.uploadedRecipes)}
                 {profile.uploadedRecipes.map((recipe) => (
                   <div key={recipe._id} className="border-b pb-3 last:border-b-0">
                     <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-medium text-gray-900">{recipe.title}</h3>
-                        <p className="text-sm text-gray-600">{recipe.description}</p>
+                      <div 
+                        className="flex items-start space-x-3 flex-1 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
+                        onClick={() => handleRecipeClick(recipe)}
+                      >
+                        {recipe.image && (
+                          <img 
+                            src={recipe.image} 
+                            alt={recipe.title} 
+                            className="w-12 h-12 object-cover rounded-md"
+                            onError={(e) => {
+                              console.log('Image failed to load:', recipe.image);
+                              e.target.style.display = 'none';
+                            }}
+                            onLoad={() => {
+                              console.log('Image loaded successfully:', recipe.image);
+                            }}
+                          />
+                        )}
+                        <div className="flex-1">
+                          <h3 className="font-medium text-gray-900">{recipe.title}</h3>
+                          <p className="text-sm text-gray-600">{recipe.description}</p>
+                        </div>
                       </div>
                       <button
-                        onClick={() => handleDeleteRecipe(recipe._id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteRecipe(recipe._id);
+                        }}
                         className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors ml-2"
                         title="Delete recipe"
                       >

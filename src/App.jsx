@@ -20,6 +20,7 @@ import AddRecipe from "./components/AddRecipe";
 import Profile from "./components/Profile";
 import AiSuggest from "./components/AiSuggest";
 import { RecipeProvider } from "./context/RecipeContext.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
 import Rooms from "./components/Rooms";
 import RoomDetails from "./components/RoomDetails";
 
@@ -187,7 +188,8 @@ export default function App() {
 
   return (
     <Router>
-      <RecipeProvider>
+      <AuthProvider>
+        <RecipeProvider>
     <div className="bg-white font-sans text-gray-700">
       <Header 
         onShowAZModal={handleShowAZModal}
@@ -216,6 +218,8 @@ export default function App() {
             <Route path="/add-recipe" element={<AddRecipe />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/ai-suggest" element={<AiSuggest />} />
+            <Route path="/videos" element={<Vedios />} />
+            <Route path="/discover" element={<Discover />} />
             <Route path="/rooms" element={<Rooms />} />
             <Route path="/rooms/:roomId" element={<RoomDetails />} />
           </Routes>
@@ -252,7 +256,8 @@ export default function App() {
           />
       )}
     </div>
-      </RecipeProvider>
+        </RecipeProvider>
+      </AuthProvider>
     </Router>
   );
 }

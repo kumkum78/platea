@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api';
 import { useRecipeContext } from '../hooks/useRecipeContext';
+import { useAuth } from '../hooks/useAuth';
 
 const Login = ({ isOpen, onClose }) => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -17,6 +18,7 @@ const Login = ({ isOpen, onClose }) => {
   const [serverError, setServerError] = useState(false);
   const navigate = useNavigate();
   const { loadUserPreferences } = useRecipeContext();
+  const { login } = useAuth();
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -73,7 +75,7 @@ const Login = ({ isOpen, onClose }) => {
         });
         console.log('Registration response:', res.data);
         
-        localStorage.setItem('token', res.data.token);
+        login(res.data.user, res.data.token);
         await loadUserPreferences();
         setMessage('Registration successful! Redirecting to home...');
         clearTimeout(timeoutId);
@@ -91,7 +93,7 @@ const Login = ({ isOpen, onClose }) => {
         });
         console.log('Login response:', res.data);
         
-        localStorage.setItem('token', res.data.token);
+        login(res.data.user, res.data.token);
         await loadUserPreferences();
         setMessage('Login successful! Redirecting to home...');
         clearTimeout(timeoutId);
@@ -170,7 +172,7 @@ const Login = ({ isOpen, onClose }) => {
           {/* Right Side - Form */}
           <div className="w-1/2 p-12 flex flex-col justify-center">
             <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-              {isSignUp ? 'Create Account' : 'Sign in to Platea'}
+              {isSignUp ? 'Create Account' : 'Sign in to Recipedia'}
             </h2>
 
             <div className="space-y-6">
