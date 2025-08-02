@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heart, Bookmark, Clock, User, PlayCircle, Play } from 'lucide-react';
 import { useRecipeContext } from '../hooks/useRecipeContext';
 import API from '../api';
@@ -128,7 +128,12 @@ export default function Vedios({id}) {
   const [videoModalTitle, setVideoModalTitle] = useState('');
 
   // Use shared context for likes and bookmarks
-  const { toggleLike, toggleBookmark, isLiked, isBookmarked } = useRecipeContext();
+  const { toggleLike, toggleBookmark, isLiked, isBookmarked, refreshUserPreferences } = useRecipeContext();
+
+  // Refresh user preferences when component mounts
+  useEffect(() => {
+    refreshUserPreferences();
+  }, [refreshUserPreferences]);
 
   const handleOpenExploreModal = async () => {
     setExploreModalOpen(true);

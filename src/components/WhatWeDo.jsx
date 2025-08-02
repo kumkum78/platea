@@ -53,7 +53,15 @@ const WhatWeDo = () => {
       setLoading(true);
       if (tabApiMap[activeTab]) {
         const meals = await tabApiMap[activeTab]();
-        if (!ignore) setRecipesState(meals);
+        if (!ignore) {
+          // Add random time and difficulty to each recipe
+          const mealsWithRandomData = meals.map(meal => ({
+            ...meal,
+            time: randomTime(),
+            difficulty: randomDifficulty()
+          }));
+          setRecipesState(mealsWithRandomData);
+        }
       } else {
         setRecipesState([]);
       }
@@ -64,7 +72,12 @@ const WhatWeDo = () => {
   }, [activeTab]);
 
   // Use shared context for likes and bookmarks
-  const { toggleLike, toggleBookmark, isLiked, isBookmarked } = useRecipeContext();
+  const { toggleLike, toggleBookmark, isLiked, isBookmarked, refreshUserPreferences } = useRecipeContext();
+
+  // Refresh user preferences when component mounts
+  useEffect(() => {
+    refreshUserPreferences();
+  }, [refreshUserPreferences]);
 
   // Fetch full recipe details by idMeal
   const handleOpenRecipeModal = async (recipe) => {
@@ -195,11 +208,11 @@ const WhatWeDo = () => {
                 <div className="flex items-center justify-between text-xs text-gray-400">
                   <div className="flex items-center justify-center text-sm space-x-1 hover:text-red-500 hover:cursor-pointer">
                     <Clock size={16} />
-                    <span>{recipe.time || randomTime()}</span>
+                    <span>{recipe.time}</span>
                   </div>
                   <div className="flex items-center justify-center text-sm space-x-1 hover:text-red-500 hover:cursor-pointer">
                     <User size={16} />
-                    <span>{recipe.difficulty || randomDifficulty()}</span>
+                    <span>{recipe.difficulty}</span>
                   </div>
                 </div>
               </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import API from "../api";
 import { useRecipeContext } from "../hooks/useRecipeContext";
 import { X, Clock, ChefHat, Trash2, Heart, Bookmark, Edit } from "lucide-react";
@@ -8,9 +8,11 @@ import { useAuth } from "../hooks/useAuth";
 export default function Profile({ onShowLogin }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [externalRecipeData, setExternalRecipeData] = useState({});
   const { loadUserPreferences } = useRecipeContext();
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation(); // Add this to force re-render on route change
   const { logout } = useAuth();
 
   const [recipeModalOpen, setRecipeModalOpen] = useState(false);
@@ -41,6 +43,131 @@ export default function Profile({ onShowLogin }) {
     fetchProfile();
   }, []);
 
+  // Force re-render when location changes
+  useEffect(() => {
+    fetchProfile();
+  }, [location.pathname]);
+
+  const fetchExternalRecipeData = async (recipeId) => {
+    try {
+      // Handle external video recipes
+      if (recipeId.startsWith('external_video_')) {
+        const videoId = recipeId.replace('external_video_', '');
+        
+        // Get video recipe data from user's stored data
+        const response = await API.get('/users/profile');
+        const userData = response.data;
+        
+        if (userData.videoRecipeData && userData.videoRecipeData[videoId]) {
+          return userData.videoRecipeData[videoId];
+        }
+        
+        // If not found in user data, try to get from the videos array in Vedios component
+        // This is a fallback for when the data wasn't properly stored
+        const videoRecipes = [
+          {
+            id: 1,
+            title: 'Molten Chocolate Lava Cake Dessert',
+            image: '/images/recipe-6-630x785.jpg',
+            category: 'Desserts',
+            description: 'Delicious molten chocolate lava cake dessert'
+          },
+          {
+            id: 2,
+            title: 'Spinach Ricotta Stuffed Vegan Pasta Shells',
+            image: '/images/recipe-21-630x785.jpg',
+            category: 'Vegetarian',
+            description: 'Healthy vegetarian pasta shells'
+          },
+          {
+            id: 3,
+            title: 'Apple Crumble with Cinnamon Oat Topping',
+            image: '/images/recipe-20-630x785.jpg',
+            category: 'Desserts',
+            description: 'Classic apple crumble dessert'
+          },
+          {
+            id: 4,
+            title: 'Creamy Garlic Mushroom Penne Pasta',
+            image: '/images/recipe-2-550x690.jpg',
+            category: 'Pasta',
+            description: 'Creamy pasta with mushrooms'
+          },
+          {
+            id: 5,
+            title: 'Chickpea and Kale Salad with Lemon Dressing',
+            image: '/images/recipe-18-630x785.jpg',
+            category: 'Healthy',
+            description: 'Fresh and healthy salad'
+          },
+          {
+            id: 6,
+            title: 'Savory Garlic Herb Butter Dinner Rolls',
+            image: '/images/recipe-13-630x785.jpg',
+            category: 'Breads',
+            description: 'Homemade dinner rolls'
+          },
+          {
+            id: 7,
+            title: 'Asian Sesame Noodles with Crunchy Veggies',
+            image: '/images/recipe-28-630x785.jpg',
+            category: 'Salads',
+            description: 'Asian-inspired noodle salad'
+          },
+          {
+            id: 8,
+            title: 'Slow Cooker Beef and Black Bean Chili',
+            image: '/images/recipe-35-630x785.jpg',
+            category: 'Meat',
+            description: 'Hearty slow cooker chili'
+          }
+        ];
+        
+        const videoRecipe = videoRecipes.find(v => v.id === parseInt(videoId));
+        if (videoRecipe) {
+          return {
+            title: videoRecipe.title,
+            image: videoRecipe.image,
+            description: videoRecipe.description,
+            category: videoRecipe.category
+          };
+        }
+        
+        // Final fallback
+        return {
+          title: `Video Recipe ${videoId}`,
+          image: '/images/recipe-2-550x690.jpg',
+          description: 'Video recipe from external source',
+          category: 'Video'
+        };
+      }
+      
+      // Handle external meal recipes
+      if (recipeId.startsWith('external_')) {
+        const mealId = recipeId.replace('external_', '');
+        
+        // Fetch from TheMealDB API
+        const response = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${mealId}`);
+        const data = await response.json();
+        
+        if (data.meals && data.meals.length > 0) {
+          const meal = data.meals[0];
+          return {
+            title: meal.strMeal,
+            image: meal.strMealThumb,
+            description: meal.strInstructions?.substring(0, 100) + '...',
+            category: meal.strCategory
+          };
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error fetching external recipe data:', error);
+      return null;
+    }
+  };
+
   const fetchProfile = async () => {
     try {
       // Add timestamp to prevent caching
@@ -53,26 +180,53 @@ export default function Profile({ onShowLogin }) {
       console.log("Liked recipes:", response.data.likedRecipes);
       console.log("Bookmarked recipes:", response.data.bookmarkedRecipes);
       
-      // Debug: Check for Dal Makhni recipe specifically
-      const dalMakhniInLiked = response.data.likedRecipes?.find(r => r.title === 'Dal Makhni');
-      const dalMakhniInBookmarked = response.data.bookmarkedRecipes?.find(r => r.title === 'Dal Makhni');
-      const dalMakhniInUploaded = response.data.uploadedRecipes?.find(r => r.title === 'Dal Makhni');
+      // Process liked and bookmarked recipes to handle both ObjectIds and string IDs
+      const processedProfile = {
+        ...response.data,
+        likedRecipes: response.data.likedRecipes || [],
+        bookmarkedRecipes: response.data.bookmarkedRecipes || []
+      };
       
-      console.log("Dal Makhni in Liked:", dalMakhniInLiked);
-      console.log("Dal Makhni in Bookmarked:", dalMakhniInBookmarked);
-      console.log("Dal Makhni in Uploaded:", dalMakhniInUploaded);
+      setProfile(processedProfile);
       
-      setProfile(response.data);
+      // Fetch external recipe data for string IDs
+      const externalData = {};
+      const allExternalIds = [
+        ...(response.data.likedRecipes || []).filter(id => typeof id === 'string'),
+        ...(response.data.bookmarkedRecipes || []).filter(id => typeof id === 'string')
+      ];
+      
+      for (const recipeId of allExternalIds) {
+        if (!externalData[recipeId]) {
+          const recipeData = await fetchExternalRecipeData(recipeId);
+          if (recipeData) {
+            externalData[recipeId] = recipeData;
+          }
+        }
+      }
+      
+      setExternalRecipeData(externalData);
+      
       // Refresh user preferences after loading profile
       loadUserPreferences();
     } catch (error) {
       console.error("Profile fetch error:", error);
-      setError("Failed to fetch profile. Please login first.");
-      if (onShowLogin) onShowLogin();
+      
+      // Check if it's an authentication error (401) or network error
+      if (error.response && error.response.status === 401) {
+        setError("Please login to view your profile.");
+        if (onShowLogin) onShowLogin();
+      } else {
+        // For other errors (network, server issues), show a more user-friendly message
+        setError("Unable to load profile at the moment. Please try again later.");
+        // Don't automatically show login for non-auth errors
+      }
     } finally {
       setLoading(false);
     }
   };
+
+
 
   const handleLogout = () => {
     logout();
@@ -140,6 +294,51 @@ export default function Profile({ onShowLogin }) {
     }
   };
 
+  const handleExternalRecipeClick = async (recipeId, recipeData) => {
+    setRecipeModalOpen(true);
+    setRecipeDetails(null);
+    setRecipeLoading(true);
+
+    try {
+      if (recipeId.startsWith('external_video_')) {
+        let img = recipeData.image;
+        setRecipeDetails({
+          title: recipeData.title,
+          image: img,
+          category: recipeData.category,
+          cuisine: 'Video', // Placeholder for cuisine
+          instructions: `This is a video recipe for ${recipeData.title}. Watch the video tutorial to learn how to make this delicious ${recipeData.category} dish.`,
+          ingredients: [`${recipeData.title} - ${recipeData.category} recipe`],
+          youtube: null,
+          isVideoRecipe: true,
+          difficulty: 'Intermediate', // Placeholder for difficulty
+          time: '30 min', // Placeholder for time
+          rating: 4.5 // Placeholder for rating
+        });
+      } else if (recipeId.startsWith('external_')) {
+        const mealId = recipeId.replace('external_', '');
+        const response = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${mealId}`);
+        const data = await response.json();
+        
+        if (data.meals && data.meals.length > 0) {
+          const meal = data.meals[0];
+          setRecipeDetails({
+            title: meal.strMeal,
+            image: meal.strMealThumb,
+            category: meal.strCategory,
+            cuisine: meal.strArea,
+            instructions: meal.strInstructions,
+            ingredients: getIngredientsList(meal),
+            youtube: meal.strYoutube
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch external recipe details:', error);
+    } finally {
+      setRecipeLoading(false);
+    }
+  };
 
 
   const getIngredientsList = (meal) => {
@@ -339,8 +538,6 @@ export default function Profile({ onShowLogin }) {
           </button>
         </div>
       </div>
-
-
     );
   }
 
@@ -387,7 +584,64 @@ export default function Profile({ onShowLogin }) {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">❤️ Liked Recipes</h2>
             {profile.likedRecipes && profile.likedRecipes.length > 0 ? (
               <div className="space-y-3">
-                {profile.likedRecipes.map((recipe) => (
+                {profile.likedRecipes.map((recipe) => {
+                  // Handle string IDs (external recipes)
+                  if (typeof recipe === 'string') {
+                    const recipeData = externalRecipeData[recipe];
+                    return (
+                      <div 
+                        key={recipe} 
+                        className="border-b pb-3 last:border-b-0 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start space-x-3 flex-1">
+                            {recipeData && recipeData.image ? (
+                              <img 
+                                src={recipeData.image}
+                                alt={recipeData.title} 
+                                className="w-12 h-12 object-cover rounded-md"
+                                onError={(e) => {
+                                  e.target.src = '/images/recipe-2-550x690.jpg';
+                                  e.target.onerror = null;
+                                }}
+                              />
+                            ) : (
+                              <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center">
+                                <span className="text-gray-500 text-xs">🍴</span>
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <h3 className="font-medium text-gray-900">
+                                {recipeData ? recipeData.title : (
+                                  recipe.startsWith('external_video_') 
+                                    ? `Video Recipe ${recipe.replace('external_video_', '')}`
+                                    : recipe.startsWith('external_')
+                                      ? `Recipe ${recipe.replace('external_', '')}`
+                                      : recipe
+                                )}
+                              </h3>
+                              <p className="text-sm text-gray-600">
+                                {recipeData ? recipeData.description : 'Loading recipe details...'}
+                              </p>
+                              {recipeData && recipeData.category && (
+                                <p className="text-xs text-red-500 mt-1">{recipeData.category}</p>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            onClick={(e) => handleUnlikeRecipe(recipe, e)}
+                            className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors ml-2"
+                            title="Unlike recipe"
+                          >
+                            <Heart size={16} fill="currentColor" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+                  
+                  // Handle recipe objects (populated recipes)
+                  return (
                   <div 
                     key={recipe._id} 
                     className="border-b pb-3 last:border-b-0 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
@@ -449,7 +703,8 @@ export default function Profile({ onShowLogin }) {
                       </button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-gray-500">No liked recipes yet.</p>
@@ -461,7 +716,65 @@ export default function Profile({ onShowLogin }) {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">🔖 Bookmarked Recipes</h2>
             {profile.bookmarkedRecipes && profile.bookmarkedRecipes.length > 0 ? (
               <div className="space-y-3">
-                {profile.bookmarkedRecipes.map((recipe) => (
+                {profile.bookmarkedRecipes.map((recipe) => {
+                  // Handle string IDs (external recipes)
+                  if (typeof recipe === 'string') {
+                    const recipeData = externalRecipeData[recipe];
+                    return (
+                      <div 
+                        key={recipe} 
+                        className="border-b pb-3 last:border-b-0 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
+                        onClick={() => handleExternalRecipeClick(recipe, recipeData)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start space-x-3 flex-1">
+                            {recipeData && recipeData.image ? (
+                              <img 
+                                src={recipeData.image}
+                                alt={recipeData.title} 
+                                className="w-12 h-12 object-cover rounded-md"
+                                onError={(e) => {
+                                  e.target.src = '/images/recipe-2-550x690.jpg';
+                                  e.target.onerror = null;
+                                }}
+                              />
+                            ) : (
+                              <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center">
+                                <span className="text-gray-500 text-xs">🍴</span>
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <h3 className="font-medium text-gray-900">
+                                {recipeData ? recipeData.title : (
+                                  recipe.startsWith('external_video_') 
+                                    ? `Video Recipe ${recipe.replace('external_video_', '')}`
+                                    : recipe.startsWith('external_')
+                                      ? `Recipe ${recipe.replace('external_', '')}`
+                                      : recipe
+                                )}
+                              </h3>
+                              <p className="text-sm text-gray-600">
+                                {recipeData ? recipeData.description : 'Loading recipe details...'}
+                              </p>
+                              {recipeData && recipeData.category && (
+                                <p className="text-xs text-red-500 mt-1">{recipeData.category}</p>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            onClick={(e) => handleUnbookmarkRecipe(recipe, e)}
+                            className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors ml-2"
+                            title="Remove bookmark"
+                          >
+                            <Bookmark size={16} fill="currentColor" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+                  
+                  // Handle recipe objects (populated recipes)
+                  return (
                   <div 
                     key={recipe._id} 
                     className="border-b pb-3 last:border-b-0 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
@@ -523,7 +836,8 @@ export default function Profile({ onShowLogin }) {
                       </button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <p className="text-gray-500">No bookmarked recipes yet.</p>
@@ -550,16 +864,9 @@ export default function Profile({ onShowLogin }) {
                             className="w-12 h-12 object-cover rounded-md"
                             onError={(e) => {
                               console.log('Image failed to load:', recipe.image);
-                              // Try to use a fallback image from the public images
-                              const fallbackImages = [
-                                '/images/recipe-2-550x690.jpg',
-                                '/images/recipe-6-630x785.jpg',
-                                '/images/recipe-18-630x785.jpg',
-                                '/images/recipe-20-630x785.jpg'
-                              ];
-                              const randomFallback = fallbackImages[Math.floor(Math.random() * fallbackImages.length)];
-                              e.target.src = randomFallback;
-                              e.target.onerror = null; // Prevent infinite loop
+                              // Hide the image and show a default placeholder
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
                             }}
                             onLoad={() => {
                               console.log('Image loaded successfully:', recipe.image);
@@ -570,6 +877,10 @@ export default function Profile({ onShowLogin }) {
                             <span className="text-gray-500 text-xs">🍴</span>
                           </div>
                         )}
+                        {/* Fallback placeholder - hidden by default */}
+                        <div className="hidden w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center">
+                          <span className="text-gray-500 text-xs">🍴</span>
+                        </div>
                         <div className="flex-1">
                           <h3 className="font-medium text-gray-900">{recipe.title}</h3>
                           <p className="text-sm text-gray-600">{recipe.description}</p>

@@ -14,9 +14,10 @@ import OurJournal from "./components/OurJournal";
 import AZRecipesModal from "./components/AZRecipesModal";
 import CategoryRecipesModal from "./components/CategoryRecipesModal";
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Register from "./components/Register";
 import Login from "./components/Login";
+import ResetPassword from "./components/ResetPassword";
 import Recipes from "./components/Recipes";
 import AddRecipe from "./components/AddRecipe";
 import Profile from "./components/Profile";
@@ -75,7 +76,8 @@ function BlogArticleModal({ title, articles, error, onClose }) {
   );
 }
 
-export default function App() {
+function AppContent() {
+  const location = useLocation(); // Now this will work properly inside Router
   const [showAZModal, setShowAZModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [categoryData, setCategoryData] = useState({
@@ -192,11 +194,9 @@ export default function App() {
   };
 
   return (
-    <Router>
-      <AuthProvider>
-        <RecipeProvider>
     <div className="bg-white font-sans text-gray-700">
       <Header 
+        key={location.pathname}
         onShowAZModal={handleShowAZModal}
         onShowCategoryRecipes={handleShowCategoryRecipes}
         onShowBlogArticle={handleShowBlogArticle}
@@ -218,16 +218,17 @@ export default function App() {
                 </>
               }
             />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login isOpen={isLoginOpen} onClose={closeLogin} />} />
-            <Route path="/recipes" element={<Recipes />} />
-            <Route path="/add-recipe" element={<AddRecipe />} />
-            <Route path="/profile" element={<Profile onShowLogin={openLogin} />} />
-            <Route path="/ai-suggest" element={<AiSuggest />} />
-            <Route path="/videos" element={<VideoRecipesPage />} />
-            <Route path="/discover" element={<DiscoverPage />} />
-            <Route path="/rooms" element={<Rooms />} />
-            <Route path="/rooms/:roomId" element={<RoomDetails />} />
+            <Route path="/register" element={<Register key="register" />} />
+            <Route path="/login" element={<Login key="login" isOpen={isLoginOpen} onClose={closeLogin} />} />
+            <Route path="/reset-password/:token" element={<ResetPassword key="reset-password" />} />
+            <Route path="/recipes" element={<Recipes key="recipes" />} />
+            <Route path="/add-recipe" element={<AddRecipe key="add-recipe" />} />
+            <Route path="/profile" element={<Profile key="profile" onShowLogin={openLogin} />} />
+            <Route path="/ai-suggest" element={<AiSuggest key="ai-suggest" />} />
+            <Route path="/videos" element={<VideoRecipesPage key="videos" />} />
+            <Route path="/discover" element={<DiscoverPage key="discover" />} />
+            <Route path="/rooms" element={<Rooms key="rooms" />} />
+            <Route path="/rooms/:roomId" element={<RoomDetails key="room-details" />} />
           </Routes>
       </main>
       <Footer
@@ -262,6 +263,15 @@ export default function App() {
       {/* Global Login Modal */}
       <Login isOpen={isLoginOpen} onClose={closeLogin} />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <RecipeProvider>
+          <AppContent />
         </RecipeProvider>
       </AuthProvider>
     </Router>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import API from "../api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Rooms() {
   const [rooms, setRooms] = useState([]);
@@ -11,21 +11,40 @@ export default function Rooms() {
   const [inviteCode, setInviteCode] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
+  const location = useLocation(); // Add this to force re-render on route change
 
   useEffect(() => {
     fetchRooms();
   }, []);
 
+  // Force re-render when location changes
+  useEffect(() => {
+    fetchRooms();
+  }, [location.pathname]);
+
   const fetchRooms = async () => {
+    console.log('Fetching rooms...');
     setLoading(true);
     setError("");
+    
+    // Add timeout to prevent hanging
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      setError("Request timed out. Please try again.");
+    }, 10000); // 10 second timeout
+    
     try {
-      const res = await API.get("/users/profile");
-      setRooms(res.data.rooms || []);
+      const res = await API.get("/rooms");
+      clearTimeout(timeoutId);
+      console.log('Rooms fetched successfully:', res.data);
+      setRooms(res.data || []);
     } catch (error) {
+      clearTimeout(timeoutId);
+      console.error('Error fetching rooms:', error);
       setError(error.response?.data?.message || "Failed to load rooms");
     } finally {
       setLoading(false);
+      console.log('Rooms fetch completed');
     }
   };
 
@@ -48,12 +67,15 @@ export default function Rooms() {
     setMessage("");
     setError("");
     try {
-      await API.post(`/rooms/join/${joinId}`);
+      console.log('Attempting to join room with ID:', joinId);
+      const response = await API.post(`/rooms/join/${joinId}`);
+      console.log('Join room response:', response.data);
       setMessage("Joined room!");
       setJoinId("");
       fetchRooms();
     } catch (err) {
-      console.error('Join room error:', err);
+      console.error('Join room error details:', err);
+      console.error('Error response:', err.response?.data);
       let msg = err.response?.data?.message;
       if (!msg && err.response?.data) msg = JSON.stringify(err.response.data);
       if (!msg && err.message) msg = err.message;
@@ -145,7 +167,10 @@ export default function Rooms() {
         {/* List of Rooms */}
         <h2 className="text-lg font-semibold mb-3">Your Rooms</h2>
         {loading ? (
-          <div>Loading...</div>
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+            <span className="ml-2 text-gray-600">Loading rooms...</span>
+          </div>
         ) : rooms.length === 0 ? (
           <div className="text-gray-500">You are not a member of any rooms yet.</div>
         ) : (

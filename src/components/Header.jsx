@@ -23,6 +23,7 @@ const Navbar = ({
 }) => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);

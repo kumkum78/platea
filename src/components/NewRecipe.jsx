@@ -159,7 +159,13 @@ const NewRecipe = () => {
           const res = await fetch("https://www.themealdb.com/api/json/v1/1/search.php?s=");
           const data = await res.json();
           if (!ignore && data.meals && data.meals.length > 0) {
-            setRecipesState(data.meals.slice(0, 8));
+            // Add random time and difficulty to each recipe
+            const recipesWithRandomData = data.meals.slice(0, 8).map(meal => ({
+              ...meal,
+              time: randomTime(),
+              difficulty: randomDifficulty()
+            }));
+            setRecipesState(recipesWithRandomData);
           } else if (!ignore) {
             setRecipesState(fallbackRecipes);
           }
@@ -172,7 +178,13 @@ const NewRecipe = () => {
           const res = await fetch("https://www.thecocktaildb.com/api/json/v1/1/filter.php?c=Ordinary_Drink");
           const data = await res.json();
           if (data.drinks && data.drinks.length > 0) {
-            setRecipesState(data.drinks.slice(0, 8));
+            // Add random time and difficulty to each drink
+            const drinksWithRandomData = data.drinks.slice(0, 8).map(drink => ({
+              ...drink,
+              time: randomTime(),
+              difficulty: randomDifficulty()
+            }));
+            setRecipesState(drinksWithRandomData);
           } else if (!ignore) {
             setRecipesState(fallbackRecipes);
           }
@@ -195,7 +207,13 @@ const NewRecipe = () => {
             const detailPromises = data.meals.slice(0, 8).map(async (meal) => {
               const detailRes = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`);
               const detailData = await detailRes.json();
-              return detailData.meals && detailData.meals[0] ? detailData.meals[0] : meal;
+              const fullMeal = detailData.meals && detailData.meals[0] ? detailData.meals[0] : meal;
+              // Add random time and difficulty to each recipe
+              return {
+                ...fullMeal,
+                time: randomTime(),
+                difficulty: randomDifficulty()
+              };
             });
             const detailedMeals = await Promise.all(detailPromises);
             if (!ignore) setRecipesState(detailedMeals);
@@ -213,7 +231,12 @@ const NewRecipe = () => {
   }, [activeCategory]);
 
   // Use shared context for likes and bookmarks
-  const { toggleLike, toggleBookmark, isLiked, isBookmarked } = useRecipeContext();
+  const { toggleLike, toggleBookmark, isLiked, isBookmarked, refreshUserPreferences } = useRecipeContext();
+
+  // Refresh user preferences when component mounts
+  useEffect(() => {
+    refreshUserPreferences();
+  }, [refreshUserPreferences]);
 
   const handleOpenRecipeModal = async (recipe) => {
     setModalOpen(true);
@@ -360,14 +383,14 @@ const NewRecipe = () => {
               <div className="flex items-center justify-between text-xs text-gray-400">
                 <div className="flex items-center justify-center text-sm space-x-1 hover:text-red-500 hover:cursor-pointer">
                   <Clock size={16} />
-                    <span>{recipe.time || randomTime()}</span>
+                    <span>{recipe.time}</span>
                 </div>
                 <div className="flex items-center justify-center text-sm space-x-1 hover:text-red-500 hover:cursor-pointer">
                     <span>{recipe.strArea || recipe.cuisine || ""}</span>
                 </div>
                 <div className="flex items-center justify-center text-sm space-x-1 hover:text-red-500 hover:cursor-pointer">
                   <User size={16} />
-                    <span>{recipe.difficulty || randomDifficulty()}</span>
+                    <span>{recipe.difficulty}</span>
                   </div>
                 </div>
               </div>

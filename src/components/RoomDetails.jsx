@@ -32,6 +32,11 @@ export default function RoomDetails() {
   });
   const [socket, setSocket] = useState(null);
   const [copiedField, setCopiedField] = useState(null);
+  const [recipeDetails, setRecipeDetails] = useState(null);
+  const [showRecipeModal, setShowRecipeModal] = useState(false);
+  const [recipeLoading, setRecipeLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const today = getToday();
 
   useEffect(() => {
@@ -148,7 +153,34 @@ export default function RoomDetails() {
     setMessage("");
     setError("");
     try {
-      const response = await API.post(`/rooms/${roomId}/recipes`, newRecipe);
+      let imageUrl = "";
+
+      // If file is selected, upload it first
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('image', selectedFile);
+        
+        try {
+          const uploadResponse = await API.post('/recipes/upload-image', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+          imageUrl = uploadResponse.data.imageUrl;
+          console.log('Image uploaded successfully:', imageUrl);
+        } catch (uploadError) {
+          console.error('Image upload failed:', uploadError);
+          setError("Image upload failed, but continuing with recipe creation...");
+          // Continue without image if upload fails
+        }
+      }
+
+      const recipeData = {
+        ...newRecipe,
+        image: imageUrl || newRecipe.image // Use uploaded image URL or existing image URL
+      };
+
+      const response = await API.post(`/rooms/${roomId}/recipes`, recipeData);
       setMessage("Recipe added to room!");
       setNewRecipe({
         title: "",
@@ -157,6 +189,8 @@ export default function RoomDetails() {
         steps: [""],
         image: ""
       });
+      setSelectedFile(null);
+      setImagePreview(null);
       setShowAddRecipeModal(false);
       fetchRoom();
       
@@ -225,6 +259,89 @@ export default function RoomDetails() {
       ...prev,
       steps: prev.steps.map((step, i) => i === index ? value : step)
     }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedFile(null);
+    setImagePreview(null);
+    setNewRecipe(prev => ({ ...prev, image: "" }));
+  };
+
+  const handleRecipeClick = async (recipe) => {
+    console.log('Recipe clicked:', recipe);
+    setShowRecipeModal(true);
+    setRecipeDetails(null);
+    setRecipeLoading(true);
+    
+    try {
+      // If it's a room recipe with complete data
+      if (recipe.title && recipe.description && (recipe.ingredients || recipe.steps)) {
+        console.log('Using complete room recipe data');
+        setRecipeDetails({
+          title: recipe.title,
+          description: recipe.description,
+          ingredients: recipe.ingredients || [],
+          steps: recipe.steps || [],
+          image: recipe.image || null,
+          author: recipe.createdBy?.name || recipe.author || 'Unknown'
+        });
+      } else if (recipe.title && recipe.description) {
+        // If it's a room recipe with only basic data, try to fetch complete data
+        console.log('Fetching complete recipe data for:', recipe._id);
+        try {
+          const response = await API.get(`/recipes/${recipe._id}`);
+          console.log('Fetched recipe data:', response.data);
+          setRecipeDetails({
+            title: response.data.title,
+            description: response.data.description,
+            ingredients: response.data.ingredients || [],
+            steps: response.data.steps || [],
+            image: response.data.image || null,
+            author: response.data.createdBy?.name || response.data.author || 'Unknown'
+          });
+        } catch (fetchError) {
+          console.error('Failed to fetch complete recipe data:', fetchError);
+          // Fallback to basic data
+          setRecipeDetails({
+            title: recipe.title,
+            description: recipe.description,
+            ingredients: [],
+            steps: [],
+            image: null,
+            author: 'Unknown'
+          });
+        }
+      } else {
+        // If it's an external recipe, fetch details
+        console.log('Fetching external recipe data');
+        const response = await API.get(`/recipes/${recipe._id}`);
+        setRecipeDetails(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch recipe details:', error);
+      setRecipeDetails({
+        title: recipe.title || 'Unknown Recipe',
+        description: recipe.description || 'No description available',
+        ingredients: [],
+        steps: [],
+        image: null,
+        author: 'Unknown'
+      });
+    } finally {
+      setRecipeLoading(false);
+    }
   };
 
   return (
@@ -296,9 +413,18 @@ export default function RoomDetails() {
               {room.recipes && room.recipes.length > 0 ? (
                 <ul className="space-y-2">
                   {room.recipes.map((recipe) => (
-                    <li key={recipe._id} className="bg-gray-100 px-4 py-2 rounded">
-                      <div className="font-medium text-gray-900">{recipe.title}</div>
-                      <div className="text-xs text-gray-500">{recipe.description}</div>
+                    <li 
+                      key={recipe._id} 
+                      className="bg-gray-100 px-4 py-2 rounded cursor-pointer hover:bg-gray-200 transition-colors"
+                      onClick={() => handleRecipeClick(recipe)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-gray-900">{recipe.title}</div>
+                          <div className="text-xs text-gray-500">{recipe.description}</div>
+                        </div>
+                        <div className="text-xs text-blue-500 font-medium">View Details</div>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -461,15 +587,52 @@ export default function RoomDetails() {
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Image URL (optional)
+                    Recipe Image
                   </label>
-                  <input
-                    type="url"
-                    value={newRecipe.image}
-                    onChange={(e) => setNewRecipe(prev => ({ ...prev, image: e.target.value }))}
-                    className="border rounded px-3 py-2 w-full"
-                    placeholder="https://example.com/image.jpg"
-                  />
+                  {/* File Upload */}
+                  <div className="space-y-4">
+                    <div>
+                      <label htmlFor="imageFile" className="block text-sm font-medium text-gray-700 mb-2">
+                        Upload Image (Recommended)
+                      </label>
+                      <input
+                        type="file"
+                        id="imageFile"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Supported formats: JPG, PNG, GIF (Max 5MB)</p>
+                    </div>
+                    {imagePreview && (
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Image Preview
+                        </label>
+                        <div className="relative inline-block">
+                          <img
+                            src={imagePreview}
+                            alt="Recipe preview"
+                            className="w-32 h-32 object-cover rounded-md border"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'block';
+                            }}
+                          />
+                          <div className="hidden w-32 h-32 bg-gray-200 rounded-md border flex items-center justify-center">
+                            <span className="text-gray-500 text-sm">Image not available</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={removeImage}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="mb-4">
@@ -560,6 +723,113 @@ export default function RoomDetails() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Recipe Details Modal */}
+        {showRecipeModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
+              <button
+                className="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-2xl"
+                onClick={() => setShowRecipeModal(false)}
+              >
+                ✕
+              </button>
+              
+              <div className="p-6">
+                {recipeLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+                    <span className="ml-2 text-gray-600">Loading recipe details...</span>
+                  </div>
+                ) : recipeDetails ? (
+                  <div>
+                    {/* Recipe Image */}
+                    {recipeDetails.image && (
+                      <div className="mb-6">
+                        <img
+                          src={recipeDetails.image.startsWith('http') ? recipeDetails.image : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${recipeDetails.image}`}
+                          alt={recipeDetails.title}
+                          className="w-full h-64 object-cover rounded-lg"
+                          onError={(e) => {
+                            console.log('Recipe image failed to load:', recipeDetails.image);
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Recipe Title */}
+                    <h2 className="text-3xl font-bold mb-4">{recipeDetails.title}</h2>
+
+                    {/* Recipe Description */}
+                    {recipeDetails.description && (
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold mb-2">Description</h3>
+                        <p className="text-gray-700 leading-relaxed">{recipeDetails.description}</p>
+                      </div>
+                    )}
+
+                    {/* Recipe Author */}
+                    {recipeDetails.author && (
+                      <div className="mb-6">
+                        <p className="text-sm text-gray-500">
+                          <span className="font-medium">Author:</span> {recipeDetails.author}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Recipe Ingredients */}
+                    {recipeDetails.ingredients && recipeDetails.ingredients.length > 0 && (
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold mb-3">Ingredients</h3>
+                        <ul className="space-y-2">
+                          {recipeDetails.ingredients.map((ingredient, index) => (
+                            <li key={index} className="flex items-start">
+                              <span className="text-red-500 mr-2">•</span>
+                              <span className="text-gray-700">{ingredient}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Recipe Steps */}
+                    {recipeDetails.steps && recipeDetails.steps.length > 0 && (
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold mb-3">Instructions</h3>
+                        <ol className="space-y-3">
+                          {recipeDetails.steps.map((step, index) => (
+                            <li key={index} className="flex items-start">
+                              <span className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
+                                {index + 1}
+                              </span>
+                              <span className="text-gray-700 leading-relaxed">{step}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+
+                    {/* No Details Available */}
+                    {(!recipeDetails.ingredients || recipeDetails.ingredients.length === 0) && 
+                     (!recipeDetails.steps || recipeDetails.steps.length === 0) && (
+                      <div className="text-center py-8">
+                        <p className="text-gray-500">No detailed recipe information available.</p>
+                        <p className="text-sm text-gray-400 mt-2">
+                          This recipe only has basic information (title and description).
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-red-500">Failed to load recipe details.</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

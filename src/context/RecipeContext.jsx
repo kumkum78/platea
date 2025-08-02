@@ -22,11 +22,43 @@ export const RecipeProvider = ({ children }) => {
       const profile = response.data;
       
       // Convert arrays to Sets for efficient lookup
-      const likedIds = new Set(profile.likedRecipes?.map(recipe => recipe._id) || []);
-      const bookmarkedIds = new Set(profile.bookmarkedRecipes?.map(recipe => recipe._id) || []);
+      // Handle both ObjectId recipes and string ID recipes (external recipes)
+      const likedIds = new Set();
+      const bookmarkedIds = new Set();
+      
+      // Process liked recipes
+      if (profile.likedRecipes) {
+        profile.likedRecipes.forEach(recipe => {
+          if (typeof recipe === 'string') {
+            // String ID (external recipe)
+            likedIds.add(recipe);
+          } else if (recipe._id) {
+            // ObjectId recipe
+            likedIds.add(recipe._id);
+          }
+        });
+      }
+      
+      // Process bookmarked recipes
+      if (profile.bookmarkedRecipes) {
+        profile.bookmarkedRecipes.forEach(recipe => {
+          if (typeof recipe === 'string') {
+            // String ID (external recipe)
+            bookmarkedIds.add(recipe);
+          } else if (recipe._id) {
+            // ObjectId recipe
+            bookmarkedIds.add(recipe._id);
+          }
+        });
+      }
       
       setLikedRecipes(likedIds);
       setBookmarkedRecipes(bookmarkedIds);
+      
+      console.log('Loaded user preferences:', {
+        likedIds: Array.from(likedIds),
+        bookmarkedIds: Array.from(bookmarkedIds)
+      });
     } catch (error) {
       console.error('Failed to load user preferences:', error);
     } finally {
@@ -231,7 +263,8 @@ export const RecipeProvider = ({ children }) => {
     toggleBookmark,
     isLiked,
     isBookmarked,
-    loadUserPreferences
+    loadUserPreferences,
+    refreshUserPreferences: loadUserPreferences
   };
 
   return (

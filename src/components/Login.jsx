@@ -4,9 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import API from '../api';
 import { useRecipeContext } from '../hooks/useRecipeContext';
 import { useAuth } from '../hooks/useAuth';
+import ForgotPassword from './ForgotPassword';
 
 const Login = ({ isOpen, onClose }) => {
   const [isSignUp, setIsSignUp] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -133,7 +135,26 @@ const Login = ({ isOpen, onClose }) => {
     setServerError(false);
   };
 
+  const handleForgotPassword = () => {
+    setShowForgotPassword(true);
+  };
+
+  const handleBackToLogin = () => {
+    setShowForgotPassword(false);
+  };
+
   if (!isOpen) return null;
+
+  // Show forgot password modal if needed
+  if (showForgotPassword) {
+    return (
+      <ForgotPassword
+        isOpen={showForgotPassword}
+        onClose={onClose}
+        onBackToLogin={handleBackToLogin}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -260,6 +281,7 @@ const Login = ({ isOpen, onClose }) => {
                 {!isSignUp && (
                   <button
                     type="button"
+                    onClick={handleForgotPassword}
                     className="text-gray-600 hover:text-red-500 transition-colors duration-200"
                   >
                     Lost Your Password?
