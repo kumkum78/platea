@@ -28,9 +28,24 @@ export default function Profile({ onShowLogin }) {
   const fetchExternalRecipeData = useCallback(async (recipeId) => {
     try {
       if (recipeId.startsWith('external_video_')) {
-        // For video recipes, return basic info
+        // For video recipes, map to actual video data
+        const videoId = recipeId.replace('external_video_', '');
+        const videoData = getVideoDataById(parseInt(videoId));
+        if (videoData) {
+          return {
+            title: videoData.title,
+            description: `A delicious ${videoData.category} recipe from ${videoData.cuisine} cuisine`,
+            image: videoData.image,
+            category: videoData.category,
+            cuisine: videoData.cuisine,
+            time: videoData.time,
+            difficulty: videoData.difficulty,
+            rating: videoData.rating
+          };
+        }
+        // Fallback if video data not found
         return {
-          title: `Video Recipe ${recipeId.replace('external_video_', '')}`,
+          title: `Video Recipe ${videoId}`,
           description: 'A delicious video recipe tutorial',
           image: '/images/recipe-2-550x690.jpg',
           category: 'Video Recipe'
@@ -58,6 +73,118 @@ export default function Profile({ onShowLogin }) {
       return null;
     }
   }, []);
+
+  // Function to get video data by ID (matching the videos array from Vedios component)
+  const getVideoDataById = (id) => {
+    const videos = [
+      {
+        id: 1,
+        category: 'Desserts',
+        title: 'Molten Chocolate Lava Cake Dessert',
+        image: '/images/recipe-6-630x785.jpg',
+        rating: 4.9,
+        time: '80 min',
+        difficulty: 'Advanced',
+        cuisine: 'Ethiopian',
+        flag: '🇪🇹',
+        liked: false,
+        bookmarked: false,
+      },
+      {
+        id: 2,
+        category: 'Vegetarian',
+        title: 'Spinach Ricotta Stuffed Vegan Pasta Shells',
+        image: '/images/recipe-21-630x785.jpg',
+        rating: 4.8,
+        time: '25 min',
+        difficulty: 'Expert',
+        cuisine: 'Italian',
+        flag: '🇮🇹',
+        liked: false,
+        bookmarked: false,
+      },
+      {
+        id: 3,
+        category: 'Desserts',
+        title: 'Apple Crumble with Cinnamon Oat Topping',
+        image: '/images/recipe-20-630x785.jpg',
+        rating: 5.0,
+        time: '35 min',
+        difficulty: 'Easy',
+        cuisine: 'Korean',
+        flag: '🇰🇷',
+        liked: false,
+        bookmarked: false,
+      },
+      {
+        id: 4,
+        category: 'Pasta',
+        title: 'Creamy Garlic Mushroom Penne Pasta',
+        image: '/images/recipe-2-550x690.jpg',
+        rating: 4.8,
+        time: '35 min',
+        difficulty: 'Intermediate',
+        cuisine: 'Italian',
+        flag: '🇮🇹',
+        liked: false,
+        bookmarked: false,
+      },
+      {
+        id: 5,
+        category: 'Healthy',
+        title: 'Chickpea and Kale Salad with Lemon Dressing',
+        image: '/images/recipe-18-630x785.jpg',
+        rating: 4.6,
+        time: '5 min',
+        difficulty: 'Intermediate',
+        cuisine: 'Spanish',
+        flag: '🇪🇸',
+        liked: false,
+        bookmarked: false,
+      },
+      {
+        id: 6,
+        category: 'Breads',
+        title: 'Savory Garlic Herb Butter Dinner Rolls',
+        image: '/images/recipe-13-630x785.jpg',
+        rating: 4.8,
+        time: '85 min',
+        difficulty: 'Beginner',
+        cuisine: 'Mexican',
+        flag: '🇲🇽',
+        liked: false,
+        bookmarked: false,
+      },
+      {
+        id: 7,
+        category: 'Salads',
+        title: 'Asian Sesame Noodles with Crunchy Veggies',
+        image: '/images/recipe-28-630x785.jpg',
+        rating: 4.5,
+        time: '60 min',
+        difficulty: 'Beginner',
+        cuisine: 'Moroccan',
+        flag: '🇲🇦',
+        liked: false,
+        bookmarked: false,
+      },
+      {
+        id: 8,
+        category: 'Pasta',
+        title: 'Creamy Mushroom Risotto with Parmesan',
+        image: '/images/recipe-2-550x690.jpg',
+        rating: 4.7,
+        time: '45 min',
+        difficulty: 'Intermediate',
+        cuisine: 'Italian',
+        flag: '🇮🇹',
+        liked: false,
+        bookmarked: false,
+      }
+    ];
+    
+    return videos.find(video => video.id === id);
+  };
 
   // Function to load external recipe data for all external recipes
   const loadExternalRecipeData = useCallback(async (recipes) => {
@@ -196,27 +323,47 @@ export default function Profile({ onShowLogin }) {
     }
   };
 
-  const handleExternalRecipeClick = async (recipeId, recipeData) => {
+  const handleExternalRecipeClick = async (recipeId) => {
     setRecipeModalOpen(true);
     setRecipeDetails(null);
     setRecipeLoading(true);
 
     try {
       if (recipeId.startsWith('external_video_')) {
-        let img = recipeData.image;
-        setRecipeDetails({
-          title: recipeData.title,
-          image: img,
-          category: recipeData.category,
-          cuisine: 'Video', // Placeholder for cuisine
-          instructions: `This is a video recipe for ${recipeData.title}. Watch the video tutorial to learn how to make this delicious ${recipeData.category} dish.`,
-          ingredients: [`${recipeData.title} - ${recipeData.category} recipe`],
-          youtube: null,
-          isVideoRecipe: true,
-          difficulty: 'Intermediate', // Placeholder for difficulty
-          time: '30 min', // Placeholder for time
-          rating: 4.5 // Placeholder for rating
-        });
+        // For video recipes, use the video data
+        const videoId = recipeId.replace('external_video_', '');
+        const videoData = getVideoDataById(parseInt(videoId));
+        
+        if (videoData) {
+          setRecipeDetails({
+            title: videoData.title,
+            image: videoData.image,
+            category: videoData.category,
+            cuisine: videoData.cuisine,
+            instructions: `This is a video recipe for ${videoData.title}. Watch the video tutorial to learn how to make this delicious ${videoData.category} dish from ${videoData.cuisine} cuisine.`,
+            ingredients: [`${videoData.title} - ${videoData.category} recipe`],
+            youtube: null,
+            isVideoRecipe: true,
+            difficulty: videoData.difficulty,
+            time: videoData.time,
+            rating: videoData.rating
+          });
+        } else {
+          // Fallback for unknown video recipes
+          setRecipeDetails({
+            title: `Video Recipe ${videoId}`,
+            image: '/images/recipe-2-550x690.jpg',
+            category: 'Video Recipe',
+            cuisine: 'Video',
+            instructions: `This is a video recipe tutorial. Watch the video to learn how to make this delicious dish.`,
+            ingredients: [`Video Recipe ${videoId} - Video tutorial`],
+            youtube: null,
+            isVideoRecipe: true,
+            difficulty: 'Intermediate',
+            time: '30 min',
+            rating: 4.5
+          });
+        }
       } else if (recipeId.startsWith('external_')) {
         const mealId = recipeId.replace('external_', '');
         const response = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${mealId}`);
@@ -536,7 +683,7 @@ export default function Profile({ onShowLogin }) {
                       <div 
                         key={recipe} 
                         className="border-b pb-3 last:border-b-0 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
-                        onClick={() => handleExternalRecipeClick(recipe, recipeData)}
+                        onClick={() => handleExternalRecipeClick(recipe)}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start space-x-3 flex-1">
@@ -669,7 +816,7 @@ export default function Profile({ onShowLogin }) {
                       <div 
                         key={recipe} 
                         className="border-b pb-3 last:border-b-0 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
-                        onClick={() => handleExternalRecipeClick(recipe, recipeData)}
+                        onClick={() => handleExternalRecipeClick(recipe)}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start space-x-3 flex-1">
