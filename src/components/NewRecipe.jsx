@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Heart, Bookmark, Clock, User } from "lucide-react";
+import { Heart, Bookmark, Clock, User, X } from "lucide-react";
 import { useRecipeContext } from "../hooks/useRecipeContext";
+import { useAuth } from "../hooks/useAuth";
 
 const categories = [
   "All Recipes",
@@ -232,11 +233,14 @@ const NewRecipe = () => {
 
   // Use shared context for likes and bookmarks
   const { toggleLike, toggleBookmark, isLiked, isBookmarked, refreshUserPreferences } = useRecipeContext();
+  const { isAuthenticated } = useAuth();
 
-  // Refresh user preferences when component mounts
+  // Refresh user preferences when component mounts (only if authenticated)
   useEffect(() => {
-    refreshUserPreferences();
-  }, [refreshUserPreferences]);
+    if (isAuthenticated) {
+      refreshUserPreferences();
+    }
+  }, [refreshUserPreferences, isAuthenticated]);
 
   const handleOpenRecipeModal = async (recipe) => {
     setModalOpen(true);

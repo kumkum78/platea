@@ -5,6 +5,7 @@ import { useRecipeContext } from "../hooks/useRecipeContext";
 
 export default function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [profileIcon, setProfileIcon] = useState(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -12,16 +13,36 @@ export default function Register() {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfileIcon(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-              const res = await API.post("/auth/register", form);
-        localStorage.setItem("token", res.data.token);
-        // Load user preferences after successful registration
-        await loadUserPreferences();
-        setMessage("Registration successful! Redirecting to home...");
-        setTimeout(() => navigate("/"), 1500);
+      const formData = new FormData();
+      formData.append('name', form.name);
+      formData.append('email', form.email);
+      formData.append('password', form.password);
+      if (profileIcon) {
+        formData.append('profileIcon', profileIcon);
+      }
+
+      const res = await API.post("/auth/register", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      localStorage.setItem("token", res.data.token);
+      // Load user preferences after successful registration
+      await loadUserPreferences();
+      setMessage("Registration successful! Redirecting to home...");
+      setTimeout(() => navigate("/"), 1500);
     } catch (err) {
       setMessage(err.response?.data?.message || "Registration failed");
     } finally {
@@ -93,6 +114,25 @@ export default function Register() {
                   value={form.password}
                   onChange={handleChange}
                 />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="profileIcon" className="block text-sm font-medium text-gray-700">
+                Profile Icon (Optional)
+              </label>
+              <div className="mt-1">
+                <input
+                  id="profileIcon"
+                  name="profileIcon"
+                  type="file"
+                  accept="image/*"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                  onChange={handleFileChange}
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Choose a profile picture (JPG, PNG, GIF up to 5MB)
+                </p>
               </div>
             </div>
 

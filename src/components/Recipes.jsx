@@ -1,29 +1,35 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Heart, Bookmark, Clock, User, Edit, Trash2 } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
 import API from "../api";
-import { Trash2 } from "lucide-react";
 
 export default function Recipes() {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     fetchRecipes();
-    getCurrentUser();
-  }, []);
+    if (isAuthenticated) {
+      getCurrentUser();
+    }
+  }, [isAuthenticated]);
 
   const getCurrentUser = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        const response = await API.get('/users/profile');
-        setCurrentUser(response.data);
-      }
+      const response = await API.get('/users/profile');
+      setCurrentUser(response.data);
     } catch (error) {
-      console.error('Failed to get current user:', error);
+      // Only log error if it's not a 401 (unauthorized) error
+      if (error.response?.status !== 401) {
+        console.error('Failed to get current user:', error);
+      } else {
+        console.log('User not authenticated, skipping current user fetch');
+      }
     }
   };
 

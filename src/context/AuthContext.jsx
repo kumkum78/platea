@@ -20,7 +20,12 @@ export const AuthProvider = ({ children }) => {
           setIsAuthenticated(true);
         })
         .catch(error => {
-          console.error('Token verification failed:', error);
+          // Only log as error if it's not a 401 (unauthorized) error
+          if (error.response?.status !== 401) {
+            console.error('Token verification failed:', error);
+          } else {
+            console.log('Token expired or invalid, clearing authentication');
+          }
           localStorage.removeItem('token');
           setUser(null);
           setIsAuthenticated(false);
@@ -33,10 +38,20 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = (userData, token) => {
-    setUser(userData);
-    setIsAuthenticated(true);
-    localStorage.setItem('token', token);
+  const login = async (userData, token) => {
+    try {
+      localStorage.setItem('token', token);
+      // Fetch fresh user data
+      const response = await API.get('/users/profile');
+      setUser(response.data);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Error setting up user session:', error);
+      localStorage.removeItem('token');
+      setUser(null);
+      setIsAuthenticated(false);
+      throw error;
+    }
   };
 
   const logout = () => {

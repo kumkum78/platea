@@ -1,152 +1,43 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../api";
 import { useRecipeContext } from "../hooks/useRecipeContext";
 import { X, Clock, ChefHat, Trash2, Heart, Bookmark, Edit } from "lucide-react";
+import ProfileImage from "./ProfileImage";
 import { useAuth } from "../hooks/useAuth";
 
 export default function Profile({ onShowLogin }) {
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [externalRecipeData, setExternalRecipeData] = useState({});
-  const { loadUserPreferences } = useRecipeContext();
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [externalRecipeData, setExternalRecipeData] = useState({});
+  const [loadingExternalData, setLoadingExternalData] = useState(false);
+  const { loadUserPreferences } = useRecipeContext();
   const navigate = useNavigate();
-  const location = useLocation(); // Add this to force re-render on route change
   const { logout } = useAuth();
 
+  // Recipe modal state
   const [recipeModalOpen, setRecipeModalOpen] = useState(false);
   const [recipeDetails, setRecipeDetails] = useState(null);
   const [recipeLoading, setRecipeLoading] = useState(false);
+
+  // Success message state
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Edit modal state
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editForm, setEditForm] = useState({
-    title: "",
-    description: "",
-    ingredients: "",
-    steps: "",
-    image: ""
-  });
-  const [editingRecipe, setEditingRecipe] = useState(null);
-  const [editLoading, setEditLoading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
-
-  // Delete modal state
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [recipeToDelete, setRecipeToDelete] = useState(null);
-
-
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  // Force re-render when location changes
-  useEffect(() => {
-    fetchProfile();
-  }, [location.pathname]);
-
-  const fetchExternalRecipeData = async (recipeId) => {
+  // Function to fetch external recipe data
+  const fetchExternalRecipeData = useCallback(async (recipeId) => {
     try {
-      // Handle external video recipes
       if (recipeId.startsWith('external_video_')) {
-        const videoId = recipeId.replace('external_video_', '');
-        
-        // Get video recipe data from user's stored data
-        const response = await API.get('/users/profile');
-        const userData = response.data;
-        
-        if (userData.videoRecipeData && userData.videoRecipeData[videoId]) {
-          return userData.videoRecipeData[videoId];
-        }
-        
-        // If not found in user data, try to get from the videos array in Vedios component
-        // This is a fallback for when the data wasn't properly stored
-        const videoRecipes = [
-          {
-            id: 1,
-            title: 'Molten Chocolate Lava Cake Dessert',
-            image: '/images/recipe-6-630x785.jpg',
-            category: 'Desserts',
-            description: 'Delicious molten chocolate lava cake dessert'
-          },
-          {
-            id: 2,
-            title: 'Spinach Ricotta Stuffed Vegan Pasta Shells',
-            image: '/images/recipe-21-630x785.jpg',
-            category: 'Vegetarian',
-            description: 'Healthy vegetarian pasta shells'
-          },
-          {
-            id: 3,
-            title: 'Apple Crumble with Cinnamon Oat Topping',
-            image: '/images/recipe-20-630x785.jpg',
-            category: 'Desserts',
-            description: 'Classic apple crumble dessert'
-          },
-          {
-            id: 4,
-            title: 'Creamy Garlic Mushroom Penne Pasta',
-            image: '/images/recipe-2-550x690.jpg',
-            category: 'Pasta',
-            description: 'Creamy pasta with mushrooms'
-          },
-          {
-            id: 5,
-            title: 'Chickpea and Kale Salad with Lemon Dressing',
-            image: '/images/recipe-18-630x785.jpg',
-            category: 'Healthy',
-            description: 'Fresh and healthy salad'
-          },
-          {
-            id: 6,
-            title: 'Savory Garlic Herb Butter Dinner Rolls',
-            image: '/images/recipe-13-630x785.jpg',
-            category: 'Breads',
-            description: 'Homemade dinner rolls'
-          },
-          {
-            id: 7,
-            title: 'Asian Sesame Noodles with Crunchy Veggies',
-            image: '/images/recipe-28-630x785.jpg',
-            category: 'Salads',
-            description: 'Asian-inspired noodle salad'
-          },
-          {
-            id: 8,
-            title: 'Slow Cooker Beef and Black Bean Chili',
-            image: '/images/recipe-35-630x785.jpg',
-            category: 'Meat',
-            description: 'Hearty slow cooker chili'
-          }
-        ];
-        
-        const videoRecipe = videoRecipes.find(v => v.id === parseInt(videoId));
-        if (videoRecipe) {
-          return {
-            title: videoRecipe.title,
-            image: videoRecipe.image,
-            description: videoRecipe.description,
-            category: videoRecipe.category
-          };
-        }
-        
-        // Final fallback
+        // For video recipes, return basic info
         return {
-          title: `Video Recipe ${videoId}`,
+          title: `Video Recipe ${recipeId.replace('external_video_', '')}`,
+          description: 'A delicious video recipe tutorial',
           image: '/images/recipe-2-550x690.jpg',
-          description: 'Video recipe from external source',
-          category: 'Video'
+          category: 'Video Recipe'
         };
-      }
-      
-      // Handle external meal recipes
-      if (recipeId.startsWith('external_')) {
+      } else if (recipeId.startsWith('external_')) {
+        // For TheMealDB recipes, fetch from API
         const mealId = recipeId.replace('external_', '');
-        
-        // Fetch from TheMealDB API
         const response = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${mealId}`);
         const data = await response.json();
         
@@ -154,79 +45,90 @@ export default function Profile({ onShowLogin }) {
           const meal = data.meals[0];
           return {
             title: meal.strMeal,
+            description: `A delicious ${meal.strCategory} recipe from ${meal.strArea}`,
             image: meal.strMealThumb,
-            description: meal.strInstructions?.substring(0, 100) + '...',
-            category: meal.strCategory
+            category: meal.strCategory,
+            cuisine: meal.strArea
           };
         }
       }
-      
       return null;
     } catch (error) {
-      console.error('Error fetching external recipe data:', error);
+      console.error(`Error fetching recipe ${recipeId}:`, error);
       return null;
     }
-  };
+  }, []);
 
-  const fetchProfile = async () => {
-    try {
-      // Add timestamp to prevent caching
-      const response = await API.get("/users/profile", {
-        params: { _t: Date.now() }
-      });
-      console.log("Profile data received:", response.data);
-      console.log("Uploaded recipes:", response.data.uploadedRecipes);
-      console.log("Uploaded recipes length:", response.data.uploadedRecipes ? response.data.uploadedRecipes.length : 0);
-      console.log("Liked recipes:", response.data.likedRecipes);
-      console.log("Bookmarked recipes:", response.data.bookmarkedRecipes);
-      
-      // Process liked and bookmarked recipes to handle both ObjectIds and string IDs
-      const processedProfile = {
-        ...response.data,
-        likedRecipes: response.data.likedRecipes || [],
-        bookmarkedRecipes: response.data.bookmarkedRecipes || []
-      };
-      
-      setProfile(processedProfile);
-      
-      // Fetch external recipe data for string IDs
-      const externalData = {};
-      const allExternalIds = [
-        ...(response.data.likedRecipes || []).filter(id => typeof id === 'string'),
-        ...(response.data.bookmarkedRecipes || []).filter(id => typeof id === 'string')
-      ];
-      
-      for (const recipeId of allExternalIds) {
-        if (!externalData[recipeId]) {
-          const recipeData = await fetchExternalRecipeData(recipeId);
-          if (recipeData) {
-            externalData[recipeId] = recipeData;
-          }
+  // Function to load external recipe data for all external recipes
+  const loadExternalRecipeData = useCallback(async (recipes) => {
+    const externalRecipes = recipes.filter(recipe => typeof recipe === 'string');
+    if (externalRecipes.length === 0) return;
+    
+    setLoadingExternalData(true);
+    const newExternalData = {};
+    
+    for (const recipeId of externalRecipes) {
+      if (!externalRecipeData[recipeId]) {
+        const recipeData = await fetchExternalRecipeData(recipeId);
+        if (recipeData) {
+          newExternalData[recipeId] = recipeData;
         }
       }
+    }
+    
+    if (Object.keys(newExternalData).length > 0) {
+      setExternalRecipeData(prev => ({ ...prev, ...newExternalData }));
+    }
+    setLoadingExternalData(false);
+  }, [externalRecipeData, fetchExternalRecipeData]);
+
+  // Keep only one fetchProfile function
+  const fetchProfile = useCallback(async () => {
+    if (loading || (profile && !error)) return;
+    
+    try {
+      setLoading(true);
+      setError("");
       
-      setExternalRecipeData(externalData);
+      const response = await API.get("/users/profile");
+      const profileData = response.data;
       
-      // Refresh user preferences after loading profile
+      // Fetch liked and bookmarked recipes data
+      const [likedRes, bookmarkedRes] = await Promise.all([
+        API.get('/users/liked-recipes'),
+        API.get('/users/bookmarked-recipes')
+      ]);
+
+      const updatedProfile = {
+        ...profileData,
+        likedRecipes: likedRes.data,
+        bookmarkedRecipes: bookmarkedRes.data
+      };
+
+      setProfile(updatedProfile);
+
+      // Load external recipe data for liked and bookmarked recipes
+      await loadExternalRecipeData(likedRes.data);
+      await loadExternalRecipeData(bookmarkedRes.data);
+
       loadUserPreferences();
     } catch (error) {
       console.error("Profile fetch error:", error);
-      
-      // Check if it's an authentication error (401) or network error
-      if (error.response && error.response.status === 401) {
+      if (error.response?.status === 401) {
         setError("Please login to view your profile.");
         if (onShowLogin) onShowLogin();
       } else {
-        // For other errors (network, server issues), show a more user-friendly message
         setError("Unable to load profile at the moment. Please try again later.");
-        // Don't automatically show login for non-auth errors
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [loading, profile, error, onShowLogin, loadUserPreferences, loadExternalRecipeData]);
 
-
+  // Use the fetchProfile in useEffect
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const handleLogout = () => {
     logout();
@@ -340,7 +242,6 @@ export default function Profile({ onShowLogin }) {
     }
   };
 
-
   const getIngredientsList = (meal) => {
     const ingredients = [];
     for (let i = 1; i <= 20; i++) {
@@ -412,6 +313,24 @@ export default function Profile({ onShowLogin }) {
       alert(error.response?.data?.message || "Failed to unbookmark recipe");
     }
   };
+
+  // Edit modal state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    description: "",
+    ingredients: "",
+    steps: "",
+    image: ""
+  });
+  const [editingRecipe, setEditingRecipe] = useState(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  // Delete modal state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [recipeToDelete, setRecipeToDelete] = useState(null);
 
   // Edit recipe functionality
   const handleEditRecipe = (recipe) => {
@@ -517,6 +436,21 @@ export default function Profile({ onShowLogin }) {
     setEditForm({ ...editForm, image: "" });
   };
 
+  // Recipe display section
+  const RecipeCard = ({ recipe }) => (
+    <div className="recipe-card bg-white rounded-lg shadow-md overflow-hidden">
+      <img 
+        src={recipe.image} 
+        alt={recipe.title} 
+        className="w-full h-48 object-cover"
+      />
+      <div className="p-4">
+        <h3 className="font-semibold text-lg mb-2">{recipe.title}</h3>
+        <p className="text-gray-600 text-sm">{recipe.cuisine}</p>
+      </div>
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -561,18 +495,28 @@ export default function Profile({ onShowLogin }) {
 
         {/* Profile Header */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{profile.name}'s Profile</h1>
-              <p className="text-gray-600">{profile.email}</p>
-            </div>
-            <div className="flex justify-end items-center">
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-8 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
-              >
-                Logout
-              </button>
+          <div className="flex items-center space-x-6">
+            <ProfileImage 
+              src={profile.profilePicture} 
+              onUpdate={(imageUrl) => {
+                setProfile({...profile, profilePicture: imageUrl});
+                setSuccessMessage('Profile picture updated successfully!');
+                setTimeout(() => setSuccessMessage(''), 3000);
+              }}
+            />
+            <div className="flex flex-1 justify-between items-center">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">{profile.name}'s Profile</h1>
+                <p className="text-gray-600">{profile.email}</p>
+              </div>
+              <div>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-8 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -592,6 +536,7 @@ export default function Profile({ onShowLogin }) {
                       <div 
                         key={recipe} 
                         className="border-b pb-3 last:border-b-0 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors"
+                        onClick={() => handleExternalRecipeClick(recipe, recipeData)}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start space-x-3 flex-1">
@@ -621,7 +566,7 @@ export default function Profile({ onShowLogin }) {
                                 )}
                               </h3>
                               <p className="text-sm text-gray-600">
-                                {recipeData ? recipeData.description : 'Loading recipe details...'}
+                                {recipeData ? recipeData.description : (loadingExternalData ? 'Loading...' : 'Loading recipe details...')}
                               </p>
                               {recipeData && recipeData.category && (
                                 <p className="text-xs text-red-500 mt-1">{recipeData.category}</p>
@@ -754,7 +699,7 @@ export default function Profile({ onShowLogin }) {
                                 )}
                               </h3>
                               <p className="text-sm text-gray-600">
-                                {recipeData ? recipeData.description : 'Loading recipe details...'}
+                                {recipeData ? recipeData.description : (loadingExternalData ? 'Loading...' : 'Loading recipe details...')}
                               </p>
                               {recipeData && recipeData.category && (
                                 <p className="text-xs text-red-500 mt-1">{recipeData.category}</p>
@@ -1261,6 +1206,7 @@ export default function Profile({ onShowLogin }) {
         </div>
       )}
 
+      {/* Profile Image Modal is now handled by ProfileImage component */}
 
     </div>
   );

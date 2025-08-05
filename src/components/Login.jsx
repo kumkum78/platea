@@ -15,6 +15,7 @@ const Login = ({ isOpen, onClose }) => {
     password: '',
     rememberMe: false
   });
+  const [profileImage, setProfileImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [serverError, setServerError] = useState(false);
@@ -24,10 +25,14 @@ const Login = ({ isOpen, onClose }) => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    if (type === 'file') {
+      setProfileImage(e.target.files[0]);
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
   };
 
   const testServerConnection = async () => {
@@ -40,7 +45,7 @@ const Login = ({ isOpen, onClose }) => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.email || !formData.password) {
+    if (!formData.email || !formData.password || (isSignUp && !formData.username)) {
       setMessage('Please fill in all required fields');
       return;
     }
@@ -48,6 +53,17 @@ const Login = ({ isOpen, onClose }) => {
     setLoading(true);
     setMessage('');
     setServerError(false);
+    
+    // Set up form data for registration
+    const formDataToSend = new FormData();
+    if (isSignUp) {
+      formDataToSend.append('name', formData.username);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('password', formData.password);
+      if (profileImage) {
+        formDataToSend.append('profileIcon', profileImage);
+      }
+    }
     
     // Test server connection first
     const serverConnected = await testServerConnection();
@@ -70,10 +86,19 @@ const Login = ({ isOpen, onClose }) => {
       if (isSignUp) {
         // Registration logic
         console.log('Making registration API call...');
-        const res = await API.post('/auth/register', {
-          name: formData.username,
-          email: formData.email,
-          password: formData.password
+        const formDataToSend = new FormData();
+        formDataToSend.append('name', formData.username);
+        formDataToSend.append('email', formData.email);
+        formDataToSend.append('password', formData.password);
+        if (profileImage) {
+          formDataToSend.append('profileIcon', profileImage);
+        }
+
+        const res = await API.post('/auth/register', formDataToSend, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          withCredentials: true
         });
         console.log('Registration response:', res.data);
         
@@ -234,6 +259,21 @@ const Login = ({ isOpen, onClose }) => {
                   required
                 />
               </div>
+
+              {isSignUp && (
+                <div>
+                  <input
+                    type="file"
+                    name="profileImage"
+                    accept="image/*"
+                    onChange={handleInputChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Choose a profile picture (Optional)
+                  </p>
+                </div>
+              )}
 
               {!isSignUp && (
                 <div className="flex items-center">

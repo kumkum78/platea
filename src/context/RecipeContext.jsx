@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import API from '../api';
+import { useAuth } from '../hooks/useAuth';
 import { RecipeContext } from './RecipeContext.js';
 
 export const RecipeProvider = ({ children }) => {
   const [likedRecipes, setLikedRecipes] = useState(new Set());
   const [bookmarkedRecipes, setBookmarkedRecipes] = useState(new Set());
   const [loading, setLoading] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   // Load user's likes and bookmarks on mount
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
+    if (isAuthenticated) {
       loadUserPreferences();
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const loadUserPreferences = async () => {
     try {
@@ -60,7 +61,12 @@ export const RecipeProvider = ({ children }) => {
         bookmarkedIds: Array.from(bookmarkedIds)
       });
     } catch (error) {
-      console.error('Failed to load user preferences:', error);
+      // Only log error if it's not a 401 (unauthorized) error
+      if (error.response?.status !== 401) {
+        console.error('Failed to load user preferences:', error);
+      } else {
+        console.log('User not authenticated, skipping preferences load');
+      }
     } finally {
       setLoading(false);
     }

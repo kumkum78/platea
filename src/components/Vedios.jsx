@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, Bookmark, Clock, User, PlayCircle, Play } from 'lucide-react';
 import { useRecipeContext } from '../hooks/useRecipeContext';
+import { useAuth } from '../hooks/useAuth';
 import API from '../api';
 
 const videos = [
@@ -129,11 +130,14 @@ export default function Vedios({id}) {
 
   // Use shared context for likes and bookmarks
   const { toggleLike, toggleBookmark, isLiked, isBookmarked, refreshUserPreferences } = useRecipeContext();
+  const { isAuthenticated } = useAuth();
 
-  // Refresh user preferences when component mounts
+  // Refresh user preferences when component mounts (only if authenticated)
   useEffect(() => {
-    refreshUserPreferences();
-  }, [refreshUserPreferences]);
+    if (isAuthenticated) {
+      refreshUserPreferences();
+    }
+  }, [refreshUserPreferences, isAuthenticated]);
 
   const handleOpenExploreModal = async () => {
     setExploreModalOpen(true);

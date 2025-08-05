@@ -15,6 +15,13 @@ import ContactModal from "./ContactModal";
 import SearchModal from "./SearchModal";
 import { useAuth } from "../hooks/useAuth";
 
+// Profile image URL helper
+const formatProfileUrl = (profilePath) => {
+  if (!profilePath) return null;
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  return `${baseUrl}${profilePath}`;
+};
+
 const Navbar = ({
   onShowAZModal,
   onShowCategoryRecipes,
@@ -23,7 +30,6 @@ const Navbar = ({
 }) => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
-  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -39,12 +45,12 @@ const Navbar = ({
   const [recipeIngredients, setRecipeIngredients] = useState([""]);
   const [recipeSteps, setRecipeSteps] = useState([""]);
   const [recipeTags, setRecipeTags] = useState("");
-  // Add back image state and handler for file input
+  // Recipe image handling
   const [recipeImage, setRecipeImage] = useState(null);
-  const fileInputRef = React.useRef(null);
-  const handleImageChange = (e) => setRecipeImage(e.target.files[0]);
-  const handleAddImageClick = () =>
-    fileInputRef.current && fileInputRef.current.click();
+  const recipeFileInputRef = React.useRef(null);
+  const handleRecipeImageChange = (e) => setRecipeImage(e.target.files[0]);
+  const handleAddRecipeImage = () =>
+    recipeFileInputRef.current && recipeFileInputRef.current.click();
 
   const toggleCategories = () => {
     setIsCategoriesOpen(!isCategoriesOpen);
@@ -172,6 +178,7 @@ const Navbar = ({
       <div className="bg-white border-b border-gray-200 py-2">
         <div className="max-w-7xl mx-auto px-2 sm:px-4">
           <div className="flex items-center justify-between min-h-[32px]">
+            {/* Existing content */}
             <div className="hidden md:flex items-center justify-center space-x-6 text-xs text-gray-600">
               <div className="flex items-center space-x-4 border-r border-gray-300 pr-6">
                 {/* Recipe Categories (top left) */}
@@ -982,11 +989,18 @@ const Navbar = ({
                 <Search size={20} />
               </button>
               {isAuthenticated ? (
-                <Link
-                  to="/profile"
-                  className="text-black hover:text-red-500 hover:cursor-pointer p-1"
-                >
-                  <User size={20} />
+                <Link to="/profile" className="text-black hover:text-red-500 p-1">
+                  {user?.profileIcon ? (
+                    <img 
+                      src={formatProfileUrl(user.profileIcon)}
+                      alt="Profile"
+                      className="w-9 h-9 rounded-full object-cover border border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center">
+                      <User size={24} className="text-gray-400" />
+                    </div>
+                  )}
                 </Link>
               ) : (
                 <button
@@ -1006,34 +1020,39 @@ const Navbar = ({
             </div>
             
             {/* Login Modal */}
-            <Login isOpen={isLoginOpen} onClose={closeLogin} />
+      <Login isOpen={isLoginOpen} onClose={closeLogin} />
 
-            {/* Custom Login Prompt */}
-            {showLoginPrompt && (
-              <div className="fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out">
-                <div className="flex items-center space-x-2">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
-                  <span className="font-medium">Please login to access room facilities</span>
-                </div>
-              </div>
-            )}
-
-            {/* Medium screen actions (tablet) */}
+      {/* Custom Login Prompt */}
+      {showLoginPrompt && (
+        <div className="fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out">
+          <div className="flex items-center space-x-2">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            <span className="font-medium">Please login to access room facilities</span>
+          </div>
+        </div>
+      )}
             <div className="hidden md:flex lg:hidden items-center space-x-2 sm:space-x-3">
-              <button className="text-black hover:text-red-500 p-1">
+              <button className="text-black hover:text-red-500 p-1" onClick={openSearch}>
                 <Search size={18} />
               </button>
               {isAuthenticated ? (
-                <Link 
-                  to="/profile"
-                  className="text-black hover:text-red-500 p-1"
-                >
-                  <User size={18} />
+                <Link to="/profile" className="text-black hover:text-red-500 p-1">
+                  {user?.profileIcon ? (
+                    <img 
+                      src={formatProfileUrl(user.profileIcon)}
+                      alt="Profile"
+                      className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                      <User size={20} className="text-gray-400" />
+                    </div>
+                  )}
                 </Link>
               ) : (
-                <button 
+                <button
                   className="text-black hover:text-red-500 p-1"
                   onClick={openLogin}
                 >
@@ -1043,27 +1062,38 @@ const Navbar = ({
               <Link to="/add-recipe" className="bg-gray-200 hover:bg-red-500 hover:text-white text-black px-2 sm:px-3 py-1.5 sm:py-2 font-semibold tracking-tighter rounded-md text-xs sm:text-sm font-medium">
                 Add Recipe
               </Link>
-              <button
-                onClick={toggleMenu}
-                className="text-gray-600 hover:text-red-500 p-1.5 sm:p-2"
-              >
-                {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
-              </button>
+                <Link to="/add-recipe" className="bg-gray-200 hover:bg-red-500 hover:text-white text-black px-2 sm:px-3 py-1.5 sm:py-2 font-semibold tracking-tighter rounded-md text-xs sm:text-sm font-medium">
+                  Add Recipe
+                </Link>
+                <button
+                  onClick={toggleMenu}
+                  className="text-gray-600 hover:text-red-500 p-1.5 sm:p-2"
+                >
+                  {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                </button>
+              </div>
             </div>
 
             {/* Mobile actions */}
             <div className="flex md:hidden items-center space-x-1">
-              <button className="text-black hover:text-red-500 p-1">
+              <button className="text-black hover:text-red-500 p-1" onClick={openSearch}>
                 <Search size={16} />
               </button>
               {isAuthenticated ? (
-                <Link 
-                  to="/profile"
-                  className="text-black hover:text-red-500 p-1"
-                >
-                  <User size={16} />
+                <Link to="/profile" className="text-black hover:text-red-500 p-1">
+                  {user?.profileIcon ? (
+                    <img 
+                      src={formatProfileUrl(user.profileIcon)}
+                      alt="Profile"
+                      className="w-7 h-7 rounded-full object-cover border border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center">
+                      <User size={16} className="text-gray-400" />
+                    </div>
+                  )}
                 </Link>
-              ) : (
+                ) : (
                 <button 
                   className="text-black hover:text-red-500 p-1"
                   onClick={openLogin}
@@ -1080,12 +1110,11 @@ const Navbar = ({
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Mobile and tablet menu */}
-      {isMenuOpen && (
-        <div className="lg:hidden border-b border-gray-100">
-          <div className="px-3 sm:px-4 pt-2 pb-3 space-y-1 bg-white">
+        {/* Mobile and tablet menu */}
+        {isMenuOpen && (
+          <div className="lg:hidden border-b border-gray-100">
+            <div className="px-3 sm:px-4 pt-2 pb-3 space-y-1 bg-white">
             {/* Mobile/Tablet navigation with dropdowns */}
             <div className="space-y-1">
               <button
@@ -1362,14 +1391,14 @@ const Navbar = ({
                 <input
                   type="file"
                   className="w-full hidden"
-                  ref={fileInputRef}
-                  onChange={handleImageChange}
+                  ref={recipeFileInputRef}
+                  onChange={handleRecipeImageChange}
                   accept="image/*"
                 />
                 <button
                   type="button"
                   className="text-blue-600 underline"
-                  onClick={handleAddImageClick}
+                  onClick={handleAddRecipeImage}
                 >
                   + Add Image
                 </button>
@@ -1458,6 +1487,9 @@ const Navbar = ({
           </div>
         </div>
       )}
+
+      {/* Search Modal */}
+      <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
     </nav>
   );
 };
