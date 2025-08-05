@@ -6,6 +6,14 @@ import { X, Clock, ChefHat, Trash2, Heart, Bookmark, Edit } from "lucide-react";
 import ProfileImage from "./ProfileImage";
 import { useAuth } from "../hooks/useAuth";
 
+// Profile image URL helper
+const formatProfileUrl = (profilePath) => {
+  if (!profilePath) return null;
+  if (profilePath.startsWith('http')) return profilePath;
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  return `${baseUrl}${profilePath}`;
+};
+
 export default function Profile({ onShowLogin }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -14,7 +22,7 @@ export default function Profile({ onShowLogin }) {
   const [loadingExternalData, setLoadingExternalData] = useState(false);
   const { loadUserPreferences } = useRecipeContext();
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, updateUser } = useAuth();
 
   // Recipe modal state
   const [recipeModalOpen, setRecipeModalOpen] = useState(false);
@@ -233,6 +241,9 @@ export default function Profile({ onShowLogin }) {
       };
 
       setProfile(updatedProfile);
+      
+      // Update auth context with latest user data
+      updateUser(updatedProfile);
 
       // Load external recipe data for liked and bookmarked recipes
       await loadExternalRecipeData(likedRes.data);
@@ -250,7 +261,7 @@ export default function Profile({ onShowLogin }) {
     } finally {
       setLoading(false);
     }
-  }, [loading, profile, error, onShowLogin, loadUserPreferences, loadExternalRecipeData]);
+  }, [loading, profile, error, onShowLogin, loadUserPreferences, loadExternalRecipeData, updateUser]);
 
   // Use the fetchProfile in useEffect
   useEffect(() => {
@@ -644,11 +655,12 @@ export default function Profile({ onShowLogin }) {
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
           <div className="flex items-center space-x-6">
             <ProfileImage 
-              src={profile.profilePicture} 
+              src={formatProfileUrl(profile.profilePicture)} 
               onUpdate={(imageUrl) => {
                 setProfile({...profile, profilePicture: imageUrl});
                 setSuccessMessage('Profile picture updated successfully!');
                 setTimeout(() => setSuccessMessage(''), 3000);
+                updateUser({ profilePicture: imageUrl }); // Update auth context
               }}
             />
             <div className="flex flex-1 justify-between items-center">

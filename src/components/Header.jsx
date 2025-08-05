@@ -990,11 +990,15 @@ const Navbar = ({
               </button>
               {isAuthenticated ? (
                 <Link to="/profile" className="text-black hover:text-red-500 p-1">
-                  {user?.profileIcon ? (
+                  {user?.profilePicture ? (
                     <img 
-                      src={formatProfileUrl(user.profileIcon)}
+                      src={formatProfileUrl(user.profilePicture)}
                       alt="Profile"
                       className="w-9 h-9 rounded-full object-cover border border-gray-200"
+                      onError={(e) => {
+                        e.target.src = '/images/icon.png';
+                        e.target.onerror = null;
+                      }}
                     />
                   ) : (
                     <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center">
@@ -1039,11 +1043,15 @@ const Navbar = ({
               </button>
               {isAuthenticated ? (
                 <Link to="/profile" className="text-black hover:text-red-500 p-1">
-                  {user?.profileIcon ? (
+                  {user?.profilePicture ? (
                     <img 
-                      src={formatProfileUrl(user.profileIcon)}
+                      src={formatProfileUrl(user.profilePicture)}
                       alt="Profile"
                       className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                      onError={(e) => {
+                        e.target.src = '/images/icon.png';
+                        e.target.onerror = null;
+                      }}
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
@@ -1081,11 +1089,15 @@ const Navbar = ({
               </button>
               {isAuthenticated ? (
                 <Link to="/profile" className="text-black hover:text-red-500 p-1">
-                  {user?.profileIcon ? (
+                  {user?.profilePicture ? (
                     <img 
-                      src={formatProfileUrl(user.profileIcon)}
+                      src={formatProfileUrl(user.profilePicture)}
                       alt="Profile"
                       className="w-7 h-7 rounded-full object-cover border border-gray-200"
+                      onError={(e) => {
+                        e.target.src = '/images/icon.png';
+                        e.target.onerror = null;
+                      }}
                     />
                   ) : (
                     <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center">
